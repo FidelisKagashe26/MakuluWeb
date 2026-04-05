@@ -46,6 +46,11 @@ jobs:
             git checkout -f "$BRANCH"
             git reset --hard "origin/$BRANCH"
 
+            # Ensure build user can write generated files (e.g., sitemap.xml).
+            chown -R makuluweb:makuluweb "$APP_DIR"
+            mkdir -p "${FRONTEND_DIR}/public"
+            chown -R makuluweb:makuluweb "${FRONTEND_DIR}/public"
+
             if [ ! -f "${BACKEND_DIR}/src/data/defaultSiteSettings.ts" ]; then
               echo "ERROR: Missing ${BACKEND_DIR}/src/data/defaultSiteSettings.ts"
               exit 1
@@ -58,8 +63,6 @@ jobs:
             echo "== Build frontend =="
             runuser -u makuluweb -- bash -lc "cd '${FRONTEND_DIR}' && npm ci"
             runuser -u makuluweb -- bash -lc "cd '${FRONTEND_DIR}' && npm run build"
-
-            chown -R makuluweb:makuluweb "$APP_DIR"
 
             echo "== Restart backend service =="
             systemctl restart "$SERVICE_NAME"
