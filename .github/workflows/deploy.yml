@@ -78,7 +78,21 @@ jobs:
             systemctl reload nginx
 
             echo "== Smoke checks =="
-            curl -fsS "http://127.0.0.1:5002/api/health" >/tmp/makulu-api-health.json
+            ok=0
+            for i in $(seq 1 30); do
+              if curl -fsS "http://127.0.0.1:5002/api/health" >/tmp/makulu-api-health.json; then
+                ok=1
+                break
+              fi
+              sleep 2
+            done
+            if [ "$ok" -ne 1 ]; then
+              echo "ERROR: backend health check failed after retries"
+              systemctl --no-pager -l status "$SERVICE_NAME" | tail -n 80 || true
+              journalctl -u "$SERVICE_NAME" --no-pager -n 150 || true
+              exit 1
+            fi
+
             curl -fsS -H "Host: 72.62.246.91" "http://127.0.0.1/" >/tmp/makulu-home.html
             grep -qi "<title>DODOMA MAKULU SDA CHURCH</title>" /tmp/makulu-home.html
 
