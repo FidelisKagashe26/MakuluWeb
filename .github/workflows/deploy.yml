@@ -1,0 +1,86 @@
+name: Deploy MakuluWeb
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+concurrency:
+  group: makuluweb-main
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Write SSH key
+        run: |
+          printf '%s' "${{ secrets.VPS_SSH_KEY_B64 }}" | tr -d '\n\r ' | base64 -d > /tmp/vps_key
+          chmod 600 /tmp/vps_key
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key_path: /tmp/vps_key
+          script_stop: true
+          command_timeout: 40m
+          request_pty: true
+          script: |
+            set -euo pipefail
+
+            APP_DIR="/var/www/makuluweb"
+            BACKEND_DIR="${APP_DIR}/Backend"
+            FRONTEND_DIR="${APP_DIR}/Frontend"
+            BRANCH="main"
+            SERVICE_NAME="makuluweb-backend.service"
+
+            echo "== Deploy started: $(date -u +'%F %T UTC') =="
+
+            git config --global --add safe.directory "$APP_DIR"
+
+            cd "$APP_DIR"
+            git fetch origin --prune
+            git checkout -f "$BRANCH"
+            git reset --hard "origin/$BRANCH"
+
+            if [ ! -f "${BACKEND_DIR}/src/data/defaultSiteSettings.ts" ]; then
+              echo "ERROR: Missing ${BACKEND_DIR}/src/data/defaultSiteSettings.ts"
+              exit 1
+            fi
+
+            echo "== Build backend =="
+            runuser -u makuluweb -- bash -lc "cd '${BACKEND_DIR}' && npm ci"
+            runuser -u makuluweb -- bash -lc "cd '${BACKEND_DIR}' && npm run build"
+
+            echo "== Build frontend =="
+            runuser -u makuluweb -- bash -lc "cd '${FRONTEND_DIR}' && npm ci"
+            runuser -u makuluweb -- bash -lc "cd '${FRONTEND_DIR}' && npm run build"
+
+            chown -R makuluweb:makuluweb "$APP_DIR"
+
+            echo "== Restart backend service =="
+            systemctl restart "$SERVICE_NAME"
+            if ! systemctl is-active --quiet "$SERVICE_NAME"; then
+              echo "ERROR: ${SERVICE_NAME} is not active after restart"
+              systemctl --no-pager -l status "$SERVICE_NAME" | tail -n 80 || true
+              journalctl -u "$SERVICE_NAME" --no-pager -n 150 || true
+              exit 1
+            fi
+
+            echo "== Validate nginx config =="
+            nginx -t
+            systemctl reload nginx
+
+            echo "== Smoke checks =="
+            curl -fsS "http://127.0.0.1:5002/api/health" >/tmp/makulu-api-health.json
+            curl -fsS -H "Host: 72.62.246.91" "http://127.0.0.1/" >/tmp/makulu-home.html
+            grep -qi "<title>DODOMA MAKULU SDA CHURCH</title>" /tmp/makulu-home.html
+
+            echo "== Final statuses =="
+            systemctl --no-pager -l status "$SERVICE_NAME" | tail -n 40 || true
+            systemctl --no-pager -l status nginx | tail -n 20 || true
+
+            echo "OK: deploy completed."
