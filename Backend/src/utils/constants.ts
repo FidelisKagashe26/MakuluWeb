@@ -1,0 +1,35 @@
+export const ROLES = {
+  SUPER_ADMIN: "super_admin",
+  ADMIN: "admin",
+  EDITOR: "editor"
+};
+
+export const PERMISSIONS = {
+  CREATE: "create",
+  UPDATE: "update",
+  DELETE: "delete",
+  VIEW: "view",
+  PUBLISH: "publish"
+};
+
+export const ROLE_PERMISSIONS = {
+  [ROLES.SUPER_ADMIN]: [
+    PERMISSIONS.CREATE,
+    PERMISSIONS.UPDATE,
+    PERMISSIONS.DELETE,
+    PERMISSIONS.VIEW,
+    PERMISSIONS.PUBLISH
+  ],
+  [ROLES.ADMIN]: [
+    PERMISSIONS.CREATE,
+    PERMISSIONS.UPDATE,
+    PERMISSIONS.VIEW,
+    PERMISSIONS.PUBLISH
+  ],
+  [ROLES.EDITOR]: [PERMISSIONS.CREATE, PERMISSIONS.UPDATE, PERMISSIONS.VIEW]
+};
+
+export const USER_STATUS = {
+  ACTIVE: "active",
+  DISABLED: "disabled"
+};

@@ -1,0 +1,463 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Lilita+One&family=Nunito:wght@400;600;700;800&family=Satisfy&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --site-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--site-font-family);
+    line-height: 1.56;
+    color-scheme: light;
+    font-synthesis: weight style;
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
+
+  html {
+    font-family: var(--site-font-family);
+    font-size: 15px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (min-width: 768px) {
+    html {
+      font-size: 16px;
+    }
+  }
+
+  body {
+    @apply m-0 bg-slate-50 text-slate-900 antialiased transition-colors duration-500 dark:bg-slate-950 dark:text-slate-100;
+    font-family: inherit;
+    font-weight: 400;
+    background:
+      radial-gradient(circle at 90% 10%, rgba(63, 114, 255, 0.2), transparent 35%),
+      radial-gradient(circle at 5% 85%, rgba(14, 165, 233, 0.17), transparent 40%);
+  }
+
+  #root {
+    font-family: inherit;
+  }
+
+  .dark body {
+    background:
+      radial-gradient(circle at 90% 10%, rgba(63, 114, 255, 0.24), transparent 35%),
+      radial-gradient(circle at 5% 85%, rgba(14, 165, 233, 0.2), transparent 40%),
+      #020617;
+  }
+
+  a {
+    @apply text-church-700 no-underline;
+  }
+
+  p,
+  span,
+  li,
+  label,
+  button,
+  input,
+  textarea,
+  select {
+    font-family: inherit;
+    font-weight: 400;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 600;
+  }
+
+  b,
+  strong {
+    font-weight: 700;
+  }
+
+  @media (min-width: 1024px) {
+    p,
+    span,
+    li,
+    label,
+    input,
+    textarea,
+    select,
+    a,
+    button {
+      font-weight: 500;
+    }
+  }
+}
+
+@layer components {
+  .surface-card {
+    @apply rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-soft backdrop-blur dark:border-slate-800 dark:bg-slate-900/80;
+  }
+
+  .form-input {
+    @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-church-500 focus:ring-2 focus:ring-church-100 dark:border-slate-700 dark:bg-slate-950;
+  }
+
+  .btn-primary {
+    @apply rounded-xl bg-gradient-to-r from-church-700 to-church-600 px-4 py-2 font-semibold text-white transition hover:brightness-105 disabled:cursor-wait disabled:opacity-60;
+  }
+
+  .admin-panel-shell {
+    @apply min-h-screen transition-colors duration-300;
+    background-image: linear-gradient(to bottom, rgb(241 245 249), rgb(255 255 255), rgb(241 245 249));
+    box-shadow: 0 26px 80px rgba(148, 163, 184, 0.22);
+  }
+
+  .admin-theme-dark.admin-panel-shell {
+    background-image: linear-gradient(to bottom, #090f2f, #060d2a, #050920);
+    box-shadow: 0 26px 80px rgba(4, 8, 30, 0.5);
+  }
+
+  .admin-sidebar {
+    @apply border-r p-4 backdrop-blur-xl;
+    border-color: rgba(226, 232, 240, 0.8);
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: inset -1px 0 0 rgba(148, 163, 184, 0.08);
+  }
+
+  .admin-theme-dark .admin-sidebar {
+    border-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.04);
+    box-shadow: none;
+  }
+
+  .admin-mobile-header {
+    @apply flex items-center justify-between border p-3 backdrop-blur-xl;
+    border-color: rgb(226 232 240);
+    background-color: rgba(255, 255, 255, 0.8);
+  }
+
+  .admin-theme-dark .admin-mobile-header {
+    border-color: rgba(147, 197, 253, 0.25);
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+
+  .admin-content-shell {
+    @apply border p-4 backdrop-blur-xl sm:p-5;
+    border-color: rgba(226, 232, 240, 0.8);
+    background-color: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 16px 40px rgba(148, 163, 184, 0.18);
+  }
+
+  .admin-theme-dark .admin-content-shell {
+    border-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.035);
+    box-shadow: none;
+  }
+
+  .admin-btn-primary {
+    @apply rounded-md px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60;
+    background-image: linear-gradient(to right, rgb(37 99 235), rgb(59 130 246));
+  }
+
+  .admin-btn-ghost {
+    @apply rounded-md border px-4 py-2 text-sm font-semibold transition;
+    border-color: rgb(203 213 225);
+    background-color: rgba(255, 255, 255, 0.85);
+    color: rgb(51 65 85);
+  }
+
+  .admin-btn-ghost:hover {
+    border-color: rgb(148 163 184);
+    background-color: rgb(248 250 252);
+    color: rgb(2 6 23);
+  }
+
+  .admin-theme-dark .admin-btn-ghost {
+    border-color: rgba(147, 197, 253, 0.35);
+    background-color: rgba(255, 255, 255, 0.03);
+    color: rgb(241 245 249);
+  }
+
+  .admin-theme-dark .admin-btn-ghost:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: rgb(255 255 255);
+  }
+
+  .admin-btn-danger {
+    @apply rounded-md border px-4 py-2 text-sm font-semibold transition;
+    border-color: rgb(253 164 175);
+    background-color: rgb(255 241 242);
+    color: rgb(190 24 93);
+  }
+
+  .admin-btn-danger:hover {
+    background-color: rgb(255 228 230);
+  }
+
+  .admin-theme-dark .admin-btn-danger {
+    border-color: rgba(251, 113, 133, 0.5);
+    background-color: rgba(136, 19, 55, 0.25);
+    color: rgb(254 205 211);
+  }
+
+  .admin-theme-dark .admin-btn-danger:hover {
+    background-color: rgba(136, 19, 55, 0.4);
+  }
+
+  .admin-nav-link {
+    @apply block rounded-md border border-transparent px-3 py-2 text-sm font-semibold transition;
+    color: rgb(51 65 85);
+  }
+
+  .admin-nav-link:hover {
+    border-color: rgb(226 232 240);
+    background-color: rgb(241 245 249);
+    color: rgb(2 6 23);
+  }
+
+  .admin-theme-dark .admin-nav-link {
+    color: rgb(226 232 240);
+  }
+
+  .admin-theme-dark .admin-nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+    color: rgb(255 255 255);
+  }
+
+  .admin-nav-link-active {
+    color: rgb(255 255 255);
+    background-image: linear-gradient(to right, rgb(37 99 235), rgb(59 130 246));
+    box-shadow: 0 10px 24px rgba(63, 114, 255, 0.35);
+  }
+
+  .admin-panel-theme h1,
+  .admin-panel-theme h2,
+  .admin-panel-theme h3,
+  .admin-panel-theme h4,
+  .admin-panel-theme th,
+  .admin-panel-theme label {
+    @apply text-slate-900;
+  }
+
+  .admin-theme-dark .admin-panel-theme h1,
+  .admin-theme-dark .admin-panel-theme h2,
+  .admin-theme-dark .admin-panel-theme h3,
+  .admin-theme-dark .admin-panel-theme h4,
+  .admin-theme-dark .admin-panel-theme th,
+  .admin-theme-dark .admin-panel-theme label {
+    @apply text-slate-50;
+  }
+
+  .admin-panel-theme p,
+  .admin-panel-theme td,
+  .admin-panel-theme small {
+    @apply text-slate-600;
+  }
+
+  .admin-theme-dark .admin-panel-theme p,
+  .admin-theme-dark .admin-panel-theme td,
+  .admin-theme-dark .admin-panel-theme small {
+    @apply text-slate-300;
+  }
+
+  .admin-panel-theme article {
+    @apply rounded-md border p-4 backdrop-blur;
+    border-color: rgba(226, 232, 240, 0.8);
+    background-color: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 8px 20px rgba(148, 163, 184, 0.08);
+  }
+
+  .admin-theme-dark .admin-panel-theme article {
+    border-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.03);
+    box-shadow: none;
+  }
+
+  .admin-panel-theme .form-input {
+    @apply border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:border-church-500 focus:ring-church-500/20;
+  }
+
+  .admin-theme-dark .admin-panel-theme .form-input {
+    @apply text-slate-100 placeholder:text-slate-400 focus:border-church-400 focus:ring-church-500/35;
+    border-color: rgba(147, 197, 253, 0.3);
+    background-color: rgba(11, 23, 67, 0.8);
+  }
+
+  .admin-panel-theme .btn-primary {
+    @apply bg-gradient-to-r from-church-600 to-church-500 text-white hover:brightness-110;
+  }
+
+  .admin-panel-theme .overflow-x-auto {
+    @apply rounded-md border;
+    border-color: rgba(226, 232, 240, 0.8);
+    background-color: rgba(255, 255, 255, 0.85);
+  }
+
+  .admin-theme-dark .admin-panel-theme .overflow-x-auto {
+    border-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+
+  .admin-panel-theme table {
+    @apply text-slate-700;
+  }
+
+  .admin-theme-dark .admin-panel-theme table {
+    @apply text-slate-100;
+  }
+
+  .admin-panel-theme thead tr {
+    @apply bg-slate-100/90;
+  }
+
+  .admin-theme-dark .admin-panel-theme thead tr {
+    background-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .admin-panel-theme tbody tr {
+    @apply border-slate-200;
+  }
+
+  .admin-theme-dark .admin-panel-theme tbody tr {
+    @apply border-white/10;
+  }
+
+  .admin-panel-theme .prose {
+    @apply text-slate-700;
+  }
+
+  .admin-theme-dark .admin-panel-theme .prose {
+    @apply text-slate-200;
+  }
+
+  .admin-topbar {
+    @apply sticky top-0 z-30 border backdrop-blur-xl;
+    border-color: rgba(226, 232, 240, 0.8);
+    background-color: rgba(255, 255, 255, 0.78);
+    box-shadow: 0 8px 32px rgba(148, 163, 184, 0.22);
+  }
+
+  .admin-theme-dark .admin-topbar {
+    border-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(7, 16, 57, 0.95);
+    box-shadow: 0 8px 32px rgba(2, 8, 30, 0.45);
+  }
+
+  .admin-topbar-btn {
+    @apply inline-flex h-10 items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold transition;
+    border-color: rgba(203, 213, 225, 0.8);
+    background-color: rgba(255, 255, 255, 0.78);
+    color: rgb(51 65 85);
+  }
+
+  .admin-topbar-btn:hover {
+    background-color: rgb(248 250 252);
+    color: rgb(2 6 23);
+  }
+
+  .admin-theme-dark .admin-topbar-btn {
+    border-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.06);
+    color: rgb(241 245 249);
+  }
+
+  .admin-theme-dark .admin-topbar-btn:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .sabbath-preview-shell .overflow-auto {
+    background: transparent;
+  }
+
+  .sabbath-preview-paper,
+  .sabbath-preview-paper p,
+  .sabbath-preview-paper span,
+  .sabbath-preview-paper h3,
+  .sabbath-preview-paper h4,
+  .sabbath-preview-paper th,
+  .sabbath-preview-paper td,
+  .sabbath-preview-paper table {
+    color: #111827;
+  }
+
+  .sabbath-preview-paper th {
+    font-weight: 700;
+  }
+
+  .admin-user-menu {
+    @apply rounded-md border p-3 backdrop-blur-xl;
+    border-color: rgb(226 232 240);
+    background-color: rgb(255 255 255);
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.18);
+  }
+
+  .admin-theme-dark .admin-user-menu {
+    border-color: rgba(255, 255, 255, 0.1);
+    background-color: rgb(7 16 57);
+  }
+
+  .admin-theme-light .admin-panel-theme [class*="text-white"] {
+    color: rgb(15 23 42) !important;
+  }
+
+  .admin-theme-light .admin-panel-theme [class*="text-slate-100"] {
+    color: rgb(30 41 59) !important;
+  }
+
+  .admin-theme-light .admin-panel-theme [class*="text-slate-200"] {
+    color: rgb(51 65 85) !important;
+  }
+
+  .admin-theme-light .admin-panel-theme [class*="text-slate-300"] {
+    color: rgb(71 85 105) !important;
+  }
+
+  .admin-theme-light .admin-panel-theme [class*="text-slate-400"] {
+    color: rgb(100 116 139) !important;
+  }
+
+  .admin-theme-light .admin-panel-theme [class*="text-slate-500"] {
+    color: rgb(100 116 139) !important;
+  }
+
+  .admin-theme-light .admin-panel-theme [class*="text-church-200"],
+  .admin-theme-light .admin-panel-theme [class*="text-church-300"] {
+    color: rgb(37 99 235) !important;
+  }
+
+  .admin-theme-light .admin-panel-theme [class*="bg-white/[0."],
+  .admin-theme-light .admin-panel-theme [class*="bg-white/10"] {
+    background-color: rgba(255, 255, 255, 0.88) !important;
+  }
+
+  .admin-theme-light .admin-panel-theme [class*="bg-slate-950"],
+  .admin-theme-light .admin-panel-theme [class*="bg-slate-900"],
+  .admin-theme-light .admin-panel-theme [class*="bg-[#040b2c]"],
+  .admin-theme-light .admin-panel-theme [class*="bg-[#071039]"],
+  .admin-theme-light .admin-panel-theme [class*="bg-[#08133c]"],
+  .admin-theme-light .admin-panel-theme [class*="bg-[#0b1743]"] {
+    background-color: rgba(241, 245, 249, 0.94) !important;
+  }
+
+  .admin-theme-light .admin-panel-theme [class*="border-white/"] {
+    border-color: rgba(203, 213, 225, 0.9) !important;
+  }
+
+  .admin-theme-light .admin-panel-theme [class*="ring-white/"] {
+    --tw-ring-color: rgba(96, 165, 250, 0.28) !important;
+  }
+
+  .admin-theme-light .admin-panel-theme input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  .admin-theme-light .admin-panel-theme textarea,
+  .admin-theme-light .admin-panel-theme select {
+    background-color: rgba(255, 255, 255, 0.96);
+    color: rgb(15 23 42);
+    border-color: rgba(203, 213, 225, 0.95);
+  }
+
+  .admin-theme-light .admin-panel-theme input::placeholder,
+  .admin-theme-light .admin-panel-theme textarea::placeholder {
+    color: rgb(148 163 184);
+  }
+}
