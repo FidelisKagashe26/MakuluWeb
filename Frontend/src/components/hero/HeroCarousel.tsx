@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Slide, { type CarouselSlideData } from "@/components/hero/Slide";
 import { api } from "@/lib/api";
+import { resolvePublicUploadUrl } from "@/services/adminService";
 
 const AUTO_SLIDE_MS = 6000;
 const IMAGE_PRELOAD_TIMEOUT_MS = 3500;
@@ -13,7 +14,7 @@ function mapCarouselSlides(input: unknown): CarouselSlideData[] {
     .slice(0, 4)
     .map((item: any, index): CarouselSlideData => ({
       id: String(item?.id || `slide-${index + 1}`),
-      imageUrl: String(item?.imageUrl || ""),
+      imageUrl: resolvePublicUploadUrl(String(item?.imageUrl || "")),
       brightness: item?.brightness === "light" ? "light" : "dark",
       badge: String(item?.badge || ""),
       title: String(item?.title || ""),

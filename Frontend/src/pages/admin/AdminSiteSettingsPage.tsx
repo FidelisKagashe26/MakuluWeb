@@ -204,7 +204,7 @@ function normalizeSlides(input: unknown): CarouselSlideForm[] {
         item?.brightness === "light" ? "light" : "dark";
       return {
         id: String(item?.id || `slide-${index + 1}`),
-        imageUrl: String(item?.imageUrl || ""),
+        imageUrl: resolvePublicUploadUrl(String(item?.imageUrl || "")),
         badge: String(item?.badge || ""),
         title: String(item?.title || ""),
         scripture: String(item?.scripture || ""),
@@ -243,7 +243,7 @@ function normalizeMissionSection(input: unknown): MissionSectionForm {
     sectionTitle: String(raw.sectionTitle ?? ""),
     statementTitle: String(raw.statementTitle ?? ""),
     statementQuote: String(raw.statementQuote ?? ""),
-    imageUrl: String(raw.imageUrl ?? ""),
+    imageUrl: resolvePublicUploadUrl(String(raw.imageUrl ?? "")),
     imageAlt: String(raw.imageAlt ?? ""),
     scriptureCards: cards
   };

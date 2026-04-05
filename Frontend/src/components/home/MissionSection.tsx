@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { api } from "@/lib/api";
+import { resolvePublicUploadUrl } from "@/services/adminService";
 
 type MissionCardData = {
   id: string;
@@ -43,7 +44,7 @@ function normalizeMissionSection(input: unknown): MissionSectionData {
       reference: String(item?.reference ?? ""),
       content: String(item?.content ?? "")
     })),
-    imageUrl: typeof raw.imageUrl === "string" ? raw.imageUrl : "",
+    imageUrl: resolvePublicUploadUrl(typeof raw.imageUrl === "string" ? raw.imageUrl : ""),
     imageAlt: typeof raw.imageAlt === "string" ? raw.imageAlt : ""
   };
 }
