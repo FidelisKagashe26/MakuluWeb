@@ -55,6 +55,44 @@ function buildUpload(allowedMimes: string[], maxFileSize?: number) {
   });
 }
 
-export const uploadImage = buildUpload(imageMimeTypes, imageUploadMaxBytes).single("image");
-export const uploadReportFiles = buildUpload(reportMimeTypes, 25 * 1024 * 1024).array("attachments", 5);
-export const uploadDocument = buildUpload(documentMimeTypes, 25 * 1024 * 1024).single("document");
+function withUploadErrorHandling(middleware: any) {
+  return (req: any, _res: any, next: any) => {
+    middleware(req, _res, (error: any) => {
+      if (!error) {
+        next();
+        return;
+      }
+
+      if (error instanceof multer.MulterError) {
+        if (error.code === "LIMIT_FILE_SIZE") {
+          const maxMb = Number(process.env.MAX_IMAGE_UPLOAD_MB || 0);
+          const sizeMessage = maxMb > 0 ? ` (${maxMb}MB max).` : ".";
+          (error as any).statusCode = 400;
+          error.message = `File ni kubwa kuliko kiwango kinachoruhusiwa${sizeMessage}`;
+          next(error);
+          return;
+        }
+
+        (error as any).statusCode = 400;
+        next(error);
+        return;
+      }
+
+      if (error instanceof Error) {
+        (error as any).statusCode = 400;
+      }
+
+      next(error);
+    });
+  };
+}
+
+export const uploadImage = withUploadErrorHandling(
+  buildUpload(imageMimeTypes, imageUploadMaxBytes).single("image")
+);
+export const uploadReportFiles = withUploadErrorHandling(
+  buildUpload(reportMimeTypes, 25 * 1024 * 1024).array("attachments", 5)
+);
+export const uploadDocument = withUploadErrorHandling(
+  buildUpload(documentMimeTypes, 25 * 1024 * 1024).single("document")
+);

@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import type { AxiosProgressEvent } from "axios";
 
 type ApiResponse<T> = {
   ok: boolean;
@@ -297,14 +298,32 @@ function mapGroupUrls(item: GroupItem): GroupItem {
   };
 }
 
-export async function uploadSiteImage(file: File) {
+export async function uploadSiteImage(
+  file: File,
+  onProgress?: (percent: number) => void
+) {
   const payload = new FormData();
   payload.append("image", file);
 
+  onProgress?.(1);
+
   const response = await api.post<ApiResponse<UploadedImageData>>("/admin/uploads/image", payload, {
-    headers: { "Content-Type": "multipart/form-data" }
+    headers: { "Content-Type": "multipart/form-data" },
+    timeout: 120000,
+    onUploadProgress: (event: AxiosProgressEvent) => {
+      const ratio =
+        typeof event.progress === "number"
+          ? event.progress
+          : Number(event.total || 0) > 0
+            ? Number(event.loaded || 0) / Number(event.total || 1)
+            : 0;
+
+      const percent = Math.max(1, Math.min(99, Math.round(ratio * 100)));
+      onProgress?.(percent);
+    }
   });
 
+  onProgress?.(100);
   return resolvePublicUploadUrl(String(response.data?.data?.path || ""));
 }
 

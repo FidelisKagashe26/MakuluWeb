@@ -33,6 +33,12 @@ type MediaForm = {
 
 type MediaTab = "photos" | "videos";
 
+type UploadIndicatorState = {
+  active: boolean;
+  label: string;
+  percent: number;
+};
+
 const initialForm: MediaForm = {
   title: "",
   description: "",
@@ -58,6 +64,51 @@ function resolveSingleLabel(category: MediaCategory) {
   return category === "video" ? "Video" : "Photo";
 }
 
+function resolveErrorMessage(error: unknown, fallback: string) {
+  if (error && typeof error === "object") {
+    const response = (error as { response?: { data?: { message?: string } } }).response;
+    const message = String(response?.data?.message || "").trim();
+    if (message) return message;
+  }
+
+  if (error instanceof Error && error.message.trim()) {
+    return error.message.trim();
+  }
+
+  return fallback;
+}
+
+function UploadProgressRing({ percent, label }: { percent: number; label: string }) {
+  const radius = 22;
+  const circumference = 2 * Math.PI * radius;
+  const normalizedPercent = Math.max(0, Math.min(100, percent));
+  const offset = circumference - (normalizedPercent / 100) * circumference;
+
+  return (
+    <div className="mt-3 flex items-center gap-3 rounded-md border border-white/15 bg-white/[0.03] p-2.5">
+      <svg viewBox="0 0 52 52" className="h-14 w-14 -rotate-90">
+        <circle cx="26" cy="26" r={radius} fill="none" className="stroke-white/20" strokeWidth="4" />
+        <circle
+          cx="26"
+          cy="26"
+          r={radius}
+          fill="none"
+          className="stroke-church-300 transition-all duration-200"
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+        />
+      </svg>
+      <div className="min-w-0">
+        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-300">Upload progress</p>
+        <p className="truncate text-sm text-slate-100">{label}</p>
+        <p className="text-xs text-church-200">{normalizedPercent}%</p>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminMediaPage() {
   const { isDark } = useTheme();
   const { hasPermission } = useAuth();
@@ -79,6 +130,11 @@ export default function AdminMediaPage() {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [editingCategoryName, setEditingCategoryName] = useState("");
+  const [uploadIndicator, setUploadIndicator] = useState<UploadIndicatorState>({
+    active: false,
+    label: "",
+    percent: 0
+  });
 
   const debouncedSearch = useDebouncedValue(search, 350);
   const canCreate = hasPermission("create");
@@ -227,6 +283,12 @@ export default function AdminMediaPage() {
     }
 
     setIsSaving(true);
+    setUploadIndicator({
+      active: false,
+      label: "",
+      percent: 0
+    });
+
     try {
       let imageUrl = form.imageUrl.trim();
       let videoUrl = form.videoUrl.trim();
@@ -234,7 +296,23 @@ export default function AdminMediaPage() {
 
       if (category === "image") {
         if (pendingImageFile) {
-          imageUrl = await uploadSiteImage(pendingImageFile);
+          setUploadIndicator({
+            active: true,
+            label: "Uploading photo...",
+            percent: 1
+          });
+          imageUrl = await uploadSiteImage(pendingImageFile, (percent) => {
+            setUploadIndicator((prev) => ({
+              active: true,
+              label: "Uploading photo...",
+              percent: Math.max(prev.percent, percent)
+            }));
+          });
+          setUploadIndicator({
+            active: true,
+            label: "Photo uploaded. Saving media...",
+            percent: 100
+          });
         }
         if (!imageUrl) {
           toast.error("Please upload a photo first.");
@@ -244,7 +322,23 @@ export default function AdminMediaPage() {
 
       if (category === "video") {
         if (pendingThumbnailFile) {
-          thumbnailUrl = await uploadSiteImage(pendingThumbnailFile);
+          setUploadIndicator({
+            active: true,
+            label: "Uploading thumbnail...",
+            percent: 1
+          });
+          thumbnailUrl = await uploadSiteImage(pendingThumbnailFile, (percent) => {
+            setUploadIndicator((prev) => ({
+              active: true,
+              label: "Uploading thumbnail...",
+              percent: Math.max(prev.percent, percent)
+            }));
+          });
+          setUploadIndicator({
+            active: true,
+            label: "Thumbnail uploaded. Saving media...",
+            percent: 100
+          });
         }
         if (!videoUrl) {
           toast.error("Video URL is required.");
@@ -274,10 +368,15 @@ export default function AdminMediaPage() {
 
       resetForm();
       await refetch();
-    } catch {
-      toast.error("Failed to save media.");
+    } catch (error) {
+      toast.error(resolveErrorMessage(error, "Failed to save media."));
     } finally {
       setIsSaving(false);
+      setUploadIndicator({
+        active: false,
+        label: "",
+        percent: 0
+      });
     }
   };
 
@@ -714,6 +813,10 @@ export default function AdminMediaPage() {
               Cancel
             </button>
           </div>
+
+          {uploadIndicator.active ? (
+            <UploadProgressRing percent={uploadIndicator.percent} label={uploadIndicator.label} />
+          ) : null}
         </article>
       ) : null}
 
