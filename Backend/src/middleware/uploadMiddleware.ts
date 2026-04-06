@@ -21,6 +21,11 @@ const storage = multer.diskStorage({
 const imageMimeTypes = ["image/*"];
 const reportMimeTypes = [...imageMimeTypes, "application/pdf"];
 const documentMimeTypes = ["application/pdf"];
+const configuredImageUploadMb = Number(process.env.MAX_IMAGE_UPLOAD_MB || 0);
+const imageUploadMaxBytes =
+  Number.isFinite(configuredImageUploadMb) && configuredImageUploadMb > 0
+    ? configuredImageUploadMb * 1024 * 1024
+    : undefined;
 
 function allowsMimeType(allowedMimes: string[], mimeType: string) {
   return allowedMimes.some((rule) => {
@@ -50,6 +55,6 @@ function buildUpload(allowedMimes: string[], maxFileSize?: number) {
   });
 }
 
-export const uploadImage = buildUpload(imageMimeTypes, 512 * 1024 * 1024).single("image");
+export const uploadImage = buildUpload(imageMimeTypes, imageUploadMaxBytes).single("image");
 export const uploadReportFiles = buildUpload(reportMimeTypes, 25 * 1024 * 1024).array("attachments", 5);
 export const uploadDocument = buildUpload(documentMimeTypes, 25 * 1024 * 1024).single("document");
