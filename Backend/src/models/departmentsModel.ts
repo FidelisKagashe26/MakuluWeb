@@ -1,13 +1,24 @@
 import { DepartmentDbModel } from "../database/models/departmentDbModel.js";
 import { ReportDbModel } from "../database/models/reportDbModel.js";
 import { generateId } from "../utils/id.js";
+import { normalizeUploadPath } from "../utils/uploadPath.js";
 
 export async function listDepartments() {
-  return DepartmentDbModel.find().sort({ createdAt: -1 }).lean();
+  const items = await DepartmentDbModel.find().sort({ createdAt: -1 }).lean();
+  return items.map((item: any) => ({
+    ...item,
+    imageUrl: normalizeUploadPath(item?.imageUrl)
+  }));
 }
 
 export async function findDepartmentById(id) {
-  return DepartmentDbModel.findOne({ id }).lean();
+  const item = await DepartmentDbModel.findOne({ id }).lean();
+  if (!item) return null;
+
+  return {
+    ...item,
+    imageUrl: normalizeUploadPath(item?.imageUrl)
+  };
 }
 
 export async function createDepartment(payload) {
@@ -15,7 +26,7 @@ export async function createDepartment(payload) {
     id: payload.id || generateId("dep"),
     name: payload.name,
     description: payload.description || "",
-    imageUrl: payload.imageUrl || "",
+    imageUrl: normalizeUploadPath(payload.imageUrl),
     createdAt: new Date().toISOString(),
     committee: payload.committee || []
   };
@@ -25,13 +36,26 @@ export async function createDepartment(payload) {
 }
 
 export async function updateDepartment(id, payload) {
+  const nextPayload = {
+    ...(payload || {})
+  };
+
+  if (Object.prototype.hasOwnProperty.call(nextPayload, "imageUrl")) {
+    nextPayload.imageUrl = normalizeUploadPath(nextPayload.imageUrl);
+  }
+
   const updated = await DepartmentDbModel.findOneAndUpdate(
     { id },
-    { $set: payload || {} },
+    { $set: nextPayload },
     { returnDocument: "after" }
   ).lean();
 
-  return updated;
+  if (!updated) return null;
+
+  return {
+    ...updated,
+    imageUrl: normalizeUploadPath(updated?.imageUrl)
+  };
 }
 
 export async function deleteDepartment(id) {

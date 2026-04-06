@@ -1,5 +1,6 @@
 import { defaultSiteSettings } from "../data/defaultSiteSettings.js";
 import { SiteSettingsDbModel } from "../database/models/siteSettingsDbModel.js";
+import { normalizeUploadPath } from "../utils/uploadPath.js";
 
 function toFiniteNumber(value: unknown, fallback: number | null) {
   if (value === null || value === undefined || value === "") {
@@ -10,34 +11,91 @@ function toFiniteNumber(value: unknown, fallback: number | null) {
 }
 
 function normalizeLibraryPdfUrl(value: unknown) {
-  const raw = String(value || "").trim();
-  if (!raw) return "";
+  return normalizeUploadPath(value);
+}
 
-  try {
-    const parsed = new URL(raw);
-    const pathName = String(parsed.pathname || "");
-    const lowerPathName = pathName.toLowerCase();
-    if (lowerPathName.startsWith("/uploads/")) {
-      const joined = `${pathName}${parsed.search || ""}`;
-      return normalizeLibraryPdfUrl(joined);
-    }
-    return raw;
-  } catch {
-    // Continue with raw value when it is not an absolute URL.
-  }
+function normalizeHeroCarousel(input: unknown): any[] {
+  if (!Array.isArray(input)) return [];
 
-  const normalized = raw.replace(/\\/g, "/");
-  const lower = normalized.toLowerCase();
-  const uploadsIndex = lower.indexOf("/uploads/");
-  if (uploadsIndex >= 0) {
-    return normalized.slice(uploadsIndex);
-  }
+  return input
+    .slice(0, 10)
+    .map((item: any, index) => ({
+      id: String(item?.id || `slide-${index + 1}`),
+      badge: String(item?.badge || "").trim(),
+      title: String(item?.title || "").trim(),
+      scripture: String(item?.scripture || "").trim(),
+      description: String(item?.description || "").trim(),
+      primaryLabel: String(item?.primaryLabel || "").trim(),
+      primaryHref: String(item?.primaryHref || "").trim(),
+      secondaryLabel: String(item?.secondaryLabel || "").trim(),
+      secondaryHref: String(item?.secondaryHref || "").trim(),
+      brightness: String(item?.brightness || "dark"),
+      imageUrl: normalizeUploadPath(item?.imageUrl)
+    }))
+    .filter((item) => item.title || item.imageUrl);
+}
 
-  if (lower.startsWith("uploads/")) {
-    return `/${normalized}`;
-  }
+function normalizeMissionSection(input: unknown): any {
+  const section = (input || {}) as Record<string, any>;
+  const scriptureCards = Array.isArray(section.scriptureCards)
+    ? section.scriptureCards
+        .slice(0, 6)
+        .map((card: any, index: number) => ({
+          id: String(card?.id || `mission-card-${index + 1}`),
+          reference: String(card?.reference || "").trim(),
+          content: String(card?.content || "").trim()
+        }))
+        .filter((card) => card.reference || card.content)
+    : [];
 
-  return normalized;
+  return {
+    ...section,
+    sectionTitle: String(section.sectionTitle || "").trim(),
+    statementTitle: String(section.statementTitle || "").trim(),
+    statementQuote: String(section.statementQuote || "").trim(),
+    imageUrl: normalizeUploadPath(section.imageUrl),
+    imageAlt: String(section.imageAlt || "").trim(),
+    scriptureCards
+  };
+}
+
+function normalizeAboutChurch(input: unknown): any {
+  const section = (input || {}) as Record<string, any>;
+  return {
+    ...section,
+    title: String(section.title || "").trim(),
+    content: String(section.content || "").trim(),
+    imageUrl: normalizeUploadPath(section.imageUrl),
+    imageAlt: String(section.imageAlt || "").trim()
+  };
+}
+
+function normalizeSiteSettings(settings: any): any {
+  const source = (settings || {}) as Record<string, any>;
+  const libraryItems = Array.isArray(source.libraryItems)
+    ? source.libraryItems
+        .slice(0, 200)
+        .map((item: any, index: number) => ({
+          ...item,
+          id: String(item?.id || `library-item-${index + 1}`),
+          title: String(item?.title || "").trim(),
+          description: String(item?.description || "").trim(),
+          pdfUrl: normalizeLibraryPdfUrl(item?.pdfUrl),
+          fileName: String(item?.fileName || "").trim(),
+          uploadedAt: String(item?.uploadedAt || "").trim()
+        }))
+        .filter((item) => item.title && item.pdfUrl)
+    : [];
+
+  return {
+    ...source,
+    logoUrl: normalizeUploadPath(source.logoUrl),
+    faviconUrl: normalizeUploadPath(source.faviconUrl),
+    heroCarousel: normalizeHeroCarousel(source.heroCarousel),
+    missionSection: normalizeMissionSection(source.missionSection),
+    aboutChurch: normalizeAboutChurch(source.aboutChurch),
+    libraryItems
+  };
 }
 
 function stripSystemFields(document: any) {
@@ -58,15 +116,17 @@ export async function getSiteSettings() {
     });
   }
 
-  return stripSystemFields(settingsDoc);
+  return normalizeSiteSettings(stripSystemFields(settingsDoc));
 }
 
 export async function updateSiteSettings(payload) {
   const current = (await getSiteSettings()) || defaultSiteSettings;
 
   const hasMissionCards = Array.isArray(payload?.missionSection?.scriptureCards);
+  const hasHeroCarousel = Array.isArray(payload?.heroCarousel);
   const hasQuickLinks = Array.isArray(payload?.quickLinks);
   const hasLibraryItems = Array.isArray(payload?.libraryItems);
+  const mergedHeroCarousel = hasHeroCarousel ? normalizeHeroCarousel(payload.heroCarousel) : current.heroCarousel || [];
   const mergedQuickLinks = hasQuickLinks
     ? payload.quickLinks
         .slice(0, 8)
@@ -105,9 +165,18 @@ export async function updateSiteSettings(payload) {
   const merged = {
     ...current,
     ...payload,
+    logoUrl: normalizeUploadPath(payload?.logoUrl ?? current.logoUrl ?? ""),
+    faviconUrl: normalizeUploadPath(payload?.faviconUrl ?? current.faviconUrl ?? ""),
+    heroCarousel: mergedHeroCarousel,
     missionSection: {
       ...current.missionSection,
       ...(payload?.missionSection || {}),
+      imageUrl: normalizeUploadPath(
+        payload?.missionSection?.imageUrl ?? current.missionSection?.imageUrl ?? ""
+      ),
+      imageAlt: String(
+        payload?.missionSection?.imageAlt ?? current.missionSection?.imageAlt ?? ""
+      ).trim(),
       scriptureCards: hasMissionCards
         ? payload.missionSection.scriptureCards
         : current.missionSection?.scriptureCards || []
@@ -123,7 +192,9 @@ export async function updateSiteSettings(payload) {
     mapLocation: mergedMapLocation,
     aboutChurch: {
       ...current.aboutChurch,
-      ...(payload?.aboutChurch || {})
+      ...(payload?.aboutChurch || {}),
+      imageUrl: normalizeUploadPath(payload?.aboutChurch?.imageUrl ?? current.aboutChurch?.imageUrl ?? ""),
+      imageAlt: String(payload?.aboutChurch?.imageAlt ?? current.aboutChurch?.imageAlt ?? "").trim()
     },
     quickLinks: mergedQuickLinks,
     libraryItems: mergedLibraryItems,
@@ -133,12 +204,14 @@ export async function updateSiteSettings(payload) {
     }
   };
 
+  const normalized = normalizeSiteSettings(merged);
+
   const saved = await SiteSettingsDbModel.findOneAndUpdate(
     { key: "main" },
-    { $set: merged, $setOnInsert: { key: "main" } },
+    { $set: normalized, $setOnInsert: { key: "main" } },
     { returnDocument: "after", upsert: true }
   );
 
-  return stripSystemFields(saved);
+  return normalizeSiteSettings(stripSystemFields(saved));
 }
 

@@ -36,6 +36,7 @@ jobs:
             FRONTEND_DIR="${APP_DIR}/Frontend"
             BRANCH="main"
             SERVICE_NAME="makuluweb-backend.service"
+            NGINX_SITE_NAME="makuluweb-ip.conf"
 
             echo "== Deploy started: $(date -u +'%F %T UTC') =="
 
@@ -63,6 +64,15 @@ jobs:
             echo "== Build frontend =="
             runuser -u makuluweb -- bash -lc "cd '${FRONTEND_DIR}' && npm ci"
             runuser -u makuluweb -- bash -lc "cd '${FRONTEND_DIR}' && npm run build"
+
+            echo "== Sync nginx site config =="
+            if [ ! -f "${APP_DIR}/makuluweb-ip.conf" ]; then
+              echo "ERROR: Missing ${APP_DIR}/makuluweb-ip.conf"
+              exit 1
+            fi
+            install -m 644 "${APP_DIR}/makuluweb-ip.conf" "/etc/nginx/sites-available/${NGINX_SITE_NAME}"
+            ln -sfn "/etc/nginx/sites-available/${NGINX_SITE_NAME}" "/etc/nginx/sites-enabled/${NGINX_SITE_NAME}"
+            rm -f /etc/nginx/sites-enabled/default
 
             echo "== Restart backend service =="
             systemctl restart "$SERVICE_NAME"
@@ -95,6 +105,25 @@ jobs:
 
             curl -fsS -H "Host: 72.62.246.91" "http://127.0.0.1/" >/tmp/makulu-home.html
             grep -qi "<title>DODOMA MAKULU SDA CHURCH</title>" /tmp/makulu-home.html
+
+            upload_probe_status=$(curl -sS -H "Host: 72.62.246.91" -o /tmp/makulu-upload-probe.json -w "%{http_code}" "http://127.0.0.1/uploads/__makulu_upload_probe__.jpg")
+            if [ "$upload_probe_status" != "404" ]; then
+              echo "ERROR: unexpected /uploads probe status: $upload_probe_status"
+              cat /tmp/makulu-upload-probe.json || true
+              exit 1
+            fi
+            upload_probe_headers=$(curl -sSI -H "Host: 72.62.246.91" "http://127.0.0.1/uploads/__makulu_upload_probe__.jpg" | tr -d '\r')
+            echo "$upload_probe_headers" >/tmp/makulu-upload-probe.headers
+            if ! grep -qi "^x-makulu-uploads: backend" /tmp/makulu-upload-probe.headers; then
+              echo "ERROR: /uploads is not proxied to backend."
+              cat /tmp/makulu-upload-probe.headers || true
+              exit 1
+            fi
+            if ! grep -qi '"ok":false' /tmp/makulu-upload-probe.json; then
+              echo "ERROR: /uploads probe body is not API JSON fallback."
+              cat /tmp/makulu-upload-probe.json || true
+              exit 1
+            fi
 
             echo "== Final statuses =="
             systemctl --no-pager -l status "$SERVICE_NAME" | tail -n 40 || true

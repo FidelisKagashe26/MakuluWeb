@@ -1,12 +1,23 @@
 import { GroupDbModel } from "../database/models/groupDbModel.js";
 import { generateId } from "../utils/id.js";
+import { normalizeUploadPath } from "../utils/uploadPath.js";
 
 export async function listGroups() {
-  return GroupDbModel.find().lean();
+  const items = await GroupDbModel.find().lean();
+  return items.map((item: any) => ({
+    ...item,
+    imageUrl: normalizeUploadPath(item?.imageUrl)
+  }));
 }
 
 export async function findGroupById(id) {
-  return GroupDbModel.findOne({ id }).lean();
+  const item = await GroupDbModel.findOne({ id }).lean();
+  if (!item) return null;
+
+  return {
+    ...item,
+    imageUrl: normalizeUploadPath(item?.imageUrl)
+  };
 }
 
 export async function createGroup(payload) {
@@ -14,7 +25,7 @@ export async function createGroup(payload) {
     id: generateId("grp"),
     name: payload.name,
     description: payload.description || "",
-    imageUrl: payload.imageUrl || "",
+    imageUrl: normalizeUploadPath(payload.imageUrl),
     youtubeLink: payload.youtubeLink || "",
     type: payload.type || "Kikundi"
   };
@@ -24,7 +35,26 @@ export async function createGroup(payload) {
 }
 
 export async function updateGroup(id, payload) {
-  return GroupDbModel.findOneAndUpdate({ id }, { $set: payload || {} }, { returnDocument: "after" }).lean();
+  const nextPayload = {
+    ...(payload || {})
+  };
+
+  if (Object.prototype.hasOwnProperty.call(nextPayload, "imageUrl")) {
+    nextPayload.imageUrl = normalizeUploadPath(nextPayload.imageUrl);
+  }
+
+  const updated = await GroupDbModel.findOneAndUpdate(
+    { id },
+    { $set: nextPayload },
+    { returnDocument: "after" }
+  ).lean();
+
+  if (!updated) return null;
+
+  return {
+    ...updated,
+    imageUrl: normalizeUploadPath(updated?.imageUrl)
+  };
 }
 
 export async function deleteGroup(id) {

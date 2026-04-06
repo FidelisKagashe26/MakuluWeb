@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { api } from "@/lib/api";
+import { resolvePublicUploadUrl } from "@/services/adminService";
 
 type AnnouncementApi = {
   id: string;
@@ -116,7 +117,7 @@ export default function RecentHighlightsSection() {
           title: item.name,
           excerpt: truncateText(item.description, 135),
           date: null,
-          imageUrl: item.imageUrl || "",
+          imageUrl: resolvePublicUploadUrl(item.imageUrl || ""),
           href: "/vikundi"
         }));
 

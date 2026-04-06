@@ -1,12 +1,23 @@
 import { LeaderDbModel } from "../database/models/leaderDbModel.js";
 import { generateId } from "../utils/id.js";
+import { normalizeUploadPath } from "../utils/uploadPath.js";
 
 export async function listLeaders() {
-  return LeaderDbModel.find().lean();
+  const items = await LeaderDbModel.find().lean();
+  return items.map((item: any) => ({
+    ...item,
+    imageUrl: normalizeUploadPath(item?.imageUrl)
+  }));
 }
 
 export async function findLeaderById(id) {
-  return LeaderDbModel.findOne({ id }).lean();
+  const item = await LeaderDbModel.findOne({ id }).lean();
+  if (!item) return null;
+
+  return {
+    ...item,
+    imageUrl: normalizeUploadPath(item?.imageUrl)
+  };
 }
 
 export async function createLeader(payload) {
@@ -17,7 +28,7 @@ export async function createLeader(payload) {
     name: payload.name,
     title: payload.title,
     biography: payload.biography || "",
-    imageUrl: payload.imageUrl || "",
+    imageUrl: normalizeUploadPath(payload.imageUrl),
     order: Number(payload.order) || total + 1
   };
 
@@ -26,7 +37,26 @@ export async function createLeader(payload) {
 }
 
 export async function updateLeader(id, payload) {
-  return LeaderDbModel.findOneAndUpdate({ id }, { $set: payload || {} }, { returnDocument: "after" }).lean();
+  const nextPayload = {
+    ...(payload || {})
+  };
+
+  if (Object.prototype.hasOwnProperty.call(nextPayload, "imageUrl")) {
+    nextPayload.imageUrl = normalizeUploadPath(nextPayload.imageUrl);
+  }
+
+  const updated = await LeaderDbModel.findOneAndUpdate(
+    { id },
+    { $set: nextPayload },
+    { returnDocument: "after" }
+  ).lean();
+
+  if (!updated) return null;
+
+  return {
+    ...updated,
+    imageUrl: normalizeUploadPath(updated?.imageUrl)
+  };
 }
 
 export async function deleteLeader(id) {

@@ -56,7 +56,15 @@ app.use(morgan("dev"));
 app.use(apiLimiter);
 app.use(sanitizeRequest);
 
-app.use("/uploads", express.static(uploadsPath));
+app.use(
+  "/uploads",
+  (_req, res, next) => {
+    // Helps verify reverse-proxy routing during deployment smoke checks.
+    res.setHeader("X-Makulu-Uploads", "backend");
+    next();
+  },
+  express.static(uploadsPath)
+);
 
 app.get("/api/health", (_req, res) => {
   res.json({
