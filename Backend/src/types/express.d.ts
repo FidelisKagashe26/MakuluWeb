@@ -8,6 +8,7 @@ declare global {
         role: string;
         email: string;
         fullName: string;
+        allowedSections: string[];
       };
     }
   }

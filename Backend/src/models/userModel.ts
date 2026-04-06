@@ -1,26 +1,52 @@
 import { generateId } from "../utils/id.js";
 import { USER_STATUS } from "../utils/constants.js";
 import { UserDbModel } from "../database/models/userDbModel.js";
+import { normalizeAllowedSections } from "../services/rbacService.js";
 
 export async function listUsers() {
-  return UserDbModel.find().sort({ createdAt: -1 }).lean();
+  const users = await UserDbModel.find().sort({ createdAt: -1 }).lean();
+  return users.map((user: any) => ({
+    ...user,
+    allowedSections: normalizeAllowedSections(user?.role, user?.allowedSections)
+  }));
 }
 
 export async function findUserByEmail(email) {
-  return UserDbModel.findOne({ email: String(email).toLowerCase() }).lean();
+  const user = await UserDbModel.findOne({ email: String(email).toLowerCase() }).lean();
+  if (!user) return null;
+
+  return {
+    ...user,
+    allowedSections: normalizeAllowedSections(user?.role, user?.allowedSections)
+  };
 }
 
 export async function findUserById(userId) {
-  return UserDbModel.findOne({ id: userId }).lean();
+  const user = await UserDbModel.findOne({ id: userId }).lean();
+  if (!user) return null;
+
+  return {
+    ...user,
+    allowedSections: normalizeAllowedSections(user?.role, user?.allowedSections)
+  };
 }
 
-export async function createUser({ email, fullName, role, passwordHash, status = USER_STATUS.ACTIVE }) {
+export async function createUser({
+  email,
+  fullName,
+  role,
+  passwordHash,
+  status = USER_STATUS.ACTIVE,
+  allowedSections
+}) {
+  const normalizedAllowedSections = normalizeAllowedSections(role, allowedSections);
   const user = {
     id: generateId("usr"),
     email: String(email).toLowerCase(),
     fullName,
     role,
     status,
+    allowedSections: normalizedAllowedSections,
     passwordHash,
     failedAttempts: 0,
     lockedUntil: null,
@@ -39,13 +65,32 @@ export async function updateUser(userId, updates) {
     nextUpdates.email = String(nextUpdates.email).toLowerCase();
   }
 
+  if (Object.prototype.hasOwnProperty.call(nextUpdates, "allowedSections")) {
+    const nextRole = String(nextUpdates.role || "").trim();
+    if (nextRole) {
+      nextUpdates.allowedSections = normalizeAllowedSections(nextRole, nextUpdates.allowedSections);
+    } else {
+      const current = await UserDbModel.findOne({ id: userId }).lean();
+      const role = current?.role;
+      nextUpdates.allowedSections = normalizeAllowedSections(role, nextUpdates.allowedSections);
+    }
+  } else if (Object.prototype.hasOwnProperty.call(nextUpdates, "role")) {
+    const current = await UserDbModel.findOne({ id: userId }).lean();
+    nextUpdates.allowedSections = normalizeAllowedSections(nextUpdates.role, current?.allowedSections);
+  }
+
   const updated = await UserDbModel.findOneAndUpdate(
     { id: userId },
     { $set: nextUpdates },
     { returnDocument: "after" }
   ).lean();
 
-  return updated;
+  if (!updated) return null;
+
+  return {
+    ...updated,
+    allowedSections: normalizeAllowedSections(updated?.role, updated?.allowedSections)
+  };
 }
 
 export async function deleteUser(userId) {
@@ -59,8 +104,15 @@ export function isUserLocked(user) {
 }
 
 export async function registerFailedAttempt(user, maxAttempts, lockMinutes) {
-  const failedAttempts = Number(user?.failedAttempts || 0) + 1;
+  const lockExpired =
+    Boolean(user?.lockedUntil) && new Date(String(user.lockedUntil)).getTime() <= Date.now();
+  const baseFailedAttempts = lockExpired ? 0 : Number(user?.failedAttempts || 0);
+  const failedAttempts = baseFailedAttempts + 1;
   const updates: any = { failedAttempts };
+
+  if (lockExpired) {
+    updates.lockedUntil = null;
+  }
 
   if (failedAttempts >= maxAttempts) {
     const lockedUntil = new Date();

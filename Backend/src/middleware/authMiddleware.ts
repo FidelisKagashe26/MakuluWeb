@@ -1,4 +1,5 @@
 import { findUserById } from "../models/userModel.js";
+import { normalizeAllowedSections } from "../services/rbacService.js";
 import { USER_STATUS } from "../utils/constants.js";
 import { verifyAccessToken } from "../services/tokenService.js";
 
@@ -27,7 +28,8 @@ export async function authenticate(req, res, next) {
       id: user.id,
       role: user.role,
       email: user.email,
-      fullName: user.fullName
+      fullName: user.fullName,
+      allowedSections: normalizeAllowedSections(user.role, user.allowedSections)
     };
 
     return next();

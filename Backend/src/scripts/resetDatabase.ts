@@ -13,6 +13,7 @@ import { AnnouncementDbModel } from "../database/models/announcementDbModel.js";
 import { ActivityDbModel } from "../database/models/activityDbModel.js";
 import { generateId } from "../utils/id.js";
 import { ROLES, USER_STATUS } from "../utils/constants.js";
+import { getDefaultSectionsForRole } from "../services/rbacService.js";
 
 async function resetDatabase() {
   await mongoose.connect(env.mongoUri, { dbName: env.mongoDbName });
@@ -38,6 +39,7 @@ async function resetDatabase() {
       fullName: "Super Admin",
       role: ROLES.SUPER_ADMIN,
       status: USER_STATUS.ACTIVE,
+      allowedSections: getDefaultSectionsForRole(ROLES.SUPER_ADMIN),
       passwordHash,
       failedAttempts: 0,
       lockedUntil: null,
@@ -51,6 +53,7 @@ async function resetDatabase() {
       fullName: "Admin User",
       role: ROLES.ADMIN,
       status: USER_STATUS.ACTIVE,
+      allowedSections: getDefaultSectionsForRole(ROLES.ADMIN),
       passwordHash,
       failedAttempts: 0,
       lockedUntil: null,
@@ -64,6 +67,7 @@ async function resetDatabase() {
       fullName: "Editor User",
       role: ROLES.EDITOR,
       status: USER_STATUS.ACTIVE,
+      allowedSections: getDefaultSectionsForRole(ROLES.EDITOR),
       passwordHash,
       failedAttempts: 0,
       lockedUntil: null,

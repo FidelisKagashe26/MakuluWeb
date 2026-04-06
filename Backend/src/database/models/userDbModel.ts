@@ -7,6 +7,7 @@ const userSchema = new Schema(
     fullName: { type: String, required: true, trim: true },
     role: { type: String, required: true, index: true },
     status: { type: String, required: true, index: true },
+    allowedSections: { type: [String], default: [] },
     passwordHash: { type: String, required: true },
     failedAttempts: { type: Number, default: 0 },
     lockedUntil: { type: String, default: null },

@@ -2,7 +2,8 @@ import type { ReactNode } from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { setAccessToken } from "@/lib/api";
 import { loginRequest, logoutRequest, meRequest, refreshRequest } from "@/services/authService";
-import type { AuthUser, Permission } from "@/types/auth";
+import { normalizeSections } from "@/lib/adminAccess";
+import type { AdminSection, AuthUser, Permission } from "@/types/auth";
 
 type LoginInput = {
   email: string;
@@ -16,12 +17,13 @@ type AuthContextValue = {
   login: (input: LoginInput) => Promise<void>;
   logout: () => Promise<void>;
   hasPermission: (permission: Permission) => boolean;
+  hasSectionAccess: (section: AdminSection) => boolean;
 };
 
 const ACCESS_TOKEN_KEY = "admin_access_token";
 const REFRESH_TOKEN_KEY = "admin_refresh_token";
 const SESSION_EXPIRES_AT_KEY = "admin_session_expires_at";
-const ADMIN_SESSION_DURATION_MS = 10 * 60 * 1000;
+const ADMIN_SESSION_DURATION_MS = 15 * 60 * 1000;
 const SESSION_BUMP_THROTTLE_MS = 15 * 1000;
 const TOKEN_REFRESH_THROTTLE_MS = 4 * 60 * 1000;
 
@@ -66,6 +68,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const lastTokenRefreshAtRef = useRef(0);
   const refreshInFlightRef = useRef(false);
 
+  const normalizeAuthUser = useCallback((nextUser: AuthUser | null) => {
+    if (!nextUser) return null;
+    return {
+      ...nextUser,
+      allowedSections: normalizeSections(nextUser.role, nextUser.allowedSections)
+    };
+  }, []);
+
   const extendSessionWindow = useCallback((force = false) => {
     const now = Date.now();
     if (!force && now - lastSessionBumpAtRef.current < SESSION_BUMP_THROTTLE_MS) {
@@ -103,8 +113,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchMe = useCallback(async () => {
     const nextUser = await meRequest();
-    setUser(nextUser ?? null);
-  }, []);
+    setUser(normalizeAuthUser(nextUser ?? null));
+  }, [normalizeAuthUser]);
 
   const refreshSession = useCallback(async () => {
     const expiresAt = loadSessionExpiresAt();
@@ -123,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const nextUser = response?.user ?? null;
 
       applyTokens(nextAccessToken, nextRefreshToken);
-      setUser(nextUser);
+      setUser(normalizeAuthUser(nextUser));
       lastTokenRefreshAtRef.current = Date.now();
       return true;
     } catch {
@@ -253,9 +263,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       applyTokens(nextAccessToken, nextRefreshToken);
       lastTokenRefreshAtRef.current = Date.now();
       extendSessionWindow(true);
-      setUser(nextUser);
+      setUser(normalizeAuthUser(nextUser));
     },
-    [applyTokens, extendSessionWindow]
+    [applyTokens, extendSessionWindow, normalizeAuthUser]
   );
 
   const logout = useCallback(async () => {
@@ -276,6 +286,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [user]
   );
 
+  const hasSectionAccess = useCallback(
+    (section: AdminSection) => {
+      if (!user) return false;
+      const allowedSections = normalizeSections(user.role, user.allowedSections);
+      return allowedSections.includes(section);
+    },
+    [user]
+  );
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
@@ -283,9 +302,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       login,
       logout,
-      hasPermission
+      hasPermission,
+      hasSectionAccess
     }),
-    [user, isLoading, login, logout, hasPermission]
+    [user, isLoading, login, logout, hasPermission, hasSectionAccess]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,7 +1,7 @@
 import path from "node:path";
 
-const ACCESS_TOKEN_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN || "10m";
-const REFRESH_TOKEN_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || "10m";
+const ACCESS_TOKEN_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN || "15m";
+const REFRESH_TOKEN_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || "15m";
 const DEFAULT_FRONTEND_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"];
 
 function normalizeOrigin(origin: string) {
@@ -37,7 +37,7 @@ export const env = {
   jwtAccessExpiresIn: ACCESS_TOKEN_EXPIRES_IN,
   jwtRefreshExpiresIn: REFRESH_TOKEN_EXPIRES_IN,
   maxLoginAttempts: Number(process.env.MAX_LOGIN_ATTEMPTS || 5),
-  lockMinutes: Number(process.env.ACCOUNT_LOCK_MINUTES || 15),
+  lockMinutes: Number(process.env.ACCOUNT_LOCK_MINUTES || 2),
   uploadsDir: process.env.UPLOADS_DIR || path.resolve(process.cwd(), "uploads"),
   apiCacheTtlMs: Number(process.env.API_CACHE_TTL_MS || 30000)
 };

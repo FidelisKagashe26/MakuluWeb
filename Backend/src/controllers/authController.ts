@@ -11,7 +11,7 @@ import {
   resetFailedAttempts,
   updateUser
 } from "../models/userModel.js";
-import { getPermissionsForRole } from "../services/rbacService.js";
+import { getPermissionsForRole, normalizeAllowedSections } from "../services/rbacService.js";
 import {
   hashToken,
   signAccessToken,
@@ -29,13 +29,14 @@ function toSafeUser(user: any) {
     role: user.role,
     status: user.status,
     lastLoginAt: user.lastLoginAt,
+    allowedSections: normalizeAllowedSections(user.role, user.allowedSections),
     permissions: getPermissionsForRole(user.role)
   };
 }
 
 function setAuthCookies(res: Response, accessToken: string, refreshToken: string) {
   const isProd = env.nodeEnv === "production";
-  const sessionMs = 10 * 60 * 1000;
+  const sessionMs = 15 * 60 * 1000;
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
     secure: isProd,
@@ -69,10 +70,14 @@ export async function login(req: Request, res: Response) {
     }
 
     if (isUserLocked(user)) {
+      const lockedUntil = new Date(String(user.lockedUntil));
+      const remainingMs = Math.max(lockedUntil.getTime() - Date.now(), 0);
+      const remainingSeconds = Math.ceil(remainingMs / 1000);
       return res.status(423).json({
         ok: false,
         message: "Akaunti imefungwa kwa muda baada ya majaribio mengi.",
-        lockedUntil: user.lockedUntil
+        lockedUntil: user.lockedUntil,
+        retryAfterSeconds: remainingSeconds
       });
     }
 
@@ -80,6 +85,21 @@ export async function login(req: Request, res: Response) {
     if (!isValidPassword) {
       const attempted = await registerFailedAttempt(user, env.maxLoginAttempts, env.lockMinutes);
       const failedAttempts = Number(attempted?.failedAttempts || user.failedAttempts || 0);
+      const lockedUntil = attempted?.lockedUntil || user.lockedUntil;
+      const isLockedNow = Boolean(lockedUntil) && new Date(String(lockedUntil)).getTime() > Date.now();
+
+      if (isLockedNow) {
+        const remainingMs = Math.max(new Date(String(lockedUntil)).getTime() - Date.now(), 0);
+        const remainingSeconds = Math.ceil(remainingMs / 1000);
+
+        return res.status(423).json({
+          ok: false,
+          message: `Majaribio ${env.maxLoginAttempts} yameshindwa. Subiri dakika ${env.lockMinutes} kabla ya kujaribu tena.`,
+          remainingAttempts: 0,
+          lockedUntil,
+          retryAfterSeconds: remainingSeconds
+        });
+      }
 
       return res.status(401).json({
         ok: false,

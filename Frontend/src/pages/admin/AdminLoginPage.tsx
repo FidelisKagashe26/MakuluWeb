@@ -6,6 +6,7 @@ import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { AuthRequestError } from "@/services/authService";
 import { useTheme } from "@/context/ThemeContext";
 
 const schema = z.object({
@@ -20,6 +21,7 @@ export default function AdminLoginPage() {
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [lockoutSeconds, setLockoutSeconds] = useState(0);
   const form = useForm<LoginForm>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -30,20 +32,45 @@ export default function AdminLoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/admin/dashboard", { replace: true });
+      navigate("/admin", { replace: true });
     }
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (lockoutSeconds <= 0) return;
+
+    const timer = window.setTimeout(() => {
+      setLockoutSeconds((prev) => Math.max(prev - 1, 0));
+    }, 1000);
+
+    return () => window.clearTimeout(timer);
+  }, [lockoutSeconds]);
 
   const onSubmit = async (values: LoginForm) => {
     try {
       await login(values);
       toast.success("Logged in successfully.");
-      navigate("/admin/dashboard", { replace: true });
+      navigate("/admin", { replace: true });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Login failed. Please try again.";
+      let message = err instanceof Error ? err.message : "Login failed. Please try again.";
+
+      if (err instanceof AuthRequestError) {
+        if (err.retryAfterSeconds && err.retryAfterSeconds > 0) {
+          setLockoutSeconds((prev) => Math.max(prev, err.retryAfterSeconds || 0));
+        }
+
+        if (err.remainingAttempts && err.remainingAttempts > 0) {
+          message = `${message} Baki na jaribio ${err.remainingAttempts}.`;
+        }
+      }
+
       toast.error(message);
     }
   };
+
+  const isLockedOut = lockoutSeconds > 0;
+  const lockoutMinutes = Math.floor(lockoutSeconds / 60);
+  const lockoutRemainSeconds = lockoutSeconds % 60;
 
   return (
     <>
@@ -93,6 +120,7 @@ export default function AdminLoginPage() {
                   className="form-input"
                   type="email"
                   placeholder="admin@makulu.org"
+                  disabled={isLockedOut}
                   {...form.register("email")}
                 />
                 {form.formState.errors.email ? (
@@ -106,6 +134,7 @@ export default function AdminLoginPage() {
                   <input
                     className="form-input pr-10"
                     type={showPassword ? "text" : "password"}
+                    disabled={isLockedOut}
                     {...form.register("password")}
                   />
                   <button
@@ -134,12 +163,22 @@ export default function AdminLoginPage() {
                 ) : null}
               </label>
 
+              {isLockedOut ? (
+                <p className="text-center text-xs font-semibold text-amber-500 dark:text-amber-300">
+                  Jaribu tena baada ya {lockoutMinutes}:{String(lockoutRemainSeconds).padStart(2, "0")}
+                </p>
+              ) : null}
+
               <button
                 className="admin-btn-primary mt-2 w-full sm:w-fit sm:justify-self-center"
                 type="submit"
-                disabled={form.formState.isSubmitting || isLoading}
+                disabled={form.formState.isSubmitting || isLoading || isLockedOut}
               >
-                {form.formState.isSubmitting ? "Signing in..." : "Sign in"}
+                {isLockedOut
+                  ? "Temporarily locked"
+                  : form.formState.isSubmitting
+                    ? "Signing in..."
+                    : "Sign in"}
               </button>
             </form>
           </article>

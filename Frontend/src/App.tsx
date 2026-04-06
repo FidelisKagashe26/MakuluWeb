@@ -9,6 +9,7 @@ import ProtectedRoute from "@/components/common/ProtectedRoute";
 import AdminLayout from "@/layouts/admin/AdminLayout";
 import { useAuth } from "@/context/AuthContext";
 import { getPendingApiRequestsCount, subscribePendingApiRequests } from "@/lib/api";
+import type { AdminSection } from "@/types/auth";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const AdminLoginPage = lazy(() => import("./pages/admin/AdminLoginPage"));
@@ -44,6 +45,26 @@ function NotFoundPage() {
       </Link>
     </section>
   );
+}
+
+function AdminIndexRedirect() {
+  const { hasSectionAccess } = useAuth();
+  const sectionToPath: Array<{ section: AdminSection; path: string }> = [
+    { section: "dashboard", path: "/admin/dashboard" },
+    { section: "settings", path: "/admin/settings" },
+    { section: "library", path: "/admin/maktaba" },
+    { section: "departments", path: "/admin/idara" },
+    { section: "leaders", path: "/admin/viongozi" },
+    { section: "groups", path: "/admin/vikundi" },
+    { section: "reports", path: "/admin/reports" },
+    { section: "media", path: "/admin/media" },
+    { section: "announcements", path: "/admin/matangazo" },
+    { section: "users", path: "/admin/users" },
+    { section: "account", path: "/admin/account" }
+  ];
+
+  const firstAllowed = sectionToPath.find((entry) => hasSectionAccess(entry.section));
+  return <Navigate to={firstAllowed?.path || "/admin/login"} replace />;
 }
 
 export default function App() {
@@ -113,11 +134,11 @@ export default function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route index element={<AdminIndexRedirect />} />
           <Route
             path="dashboard"
             element={
-              <ProtectedRoute permission="view">
+              <ProtectedRoute permission="view" section="dashboard">
                 <AdminDashboardPage />
               </ProtectedRoute>
             }
@@ -125,7 +146,7 @@ export default function App() {
           <Route
             path="account"
             element={
-              <ProtectedRoute permission="view">
+              <ProtectedRoute permission="view" section="account">
                 <AdminAccountPage />
               </ProtectedRoute>
             }
@@ -133,7 +154,7 @@ export default function App() {
           <Route
             path="change-password"
             element={
-              <ProtectedRoute permission="view">
+              <ProtectedRoute permission="view" section="account">
                 <AdminChangePasswordPage />
               </ProtectedRoute>
             }
@@ -141,7 +162,7 @@ export default function App() {
           <Route
             path="settings"
             element={
-              <ProtectedRoute permission="update">
+              <ProtectedRoute permission="update" section="settings">
                 <AdminSiteSettingsPage />
               </ProtectedRoute>
             }
@@ -149,7 +170,7 @@ export default function App() {
           <Route
             path="maktaba"
             element={
-              <ProtectedRoute permission="update">
+              <ProtectedRoute permission="update" section="library">
                 <AdminSiteSettingsPage forcedTab="library" />
               </ProtectedRoute>
             }
@@ -157,7 +178,7 @@ export default function App() {
           <Route
             path="idara"
             element={
-              <ProtectedRoute permission="view">
+              <ProtectedRoute permission="view" section="departments">
                 <AdminDepartmentsPage />
               </ProtectedRoute>
             }
@@ -165,7 +186,7 @@ export default function App() {
           <Route
             path="viongozi"
             element={
-              <ProtectedRoute permission="view">
+              <ProtectedRoute permission="view" section="leaders">
                 <AdminLeadersPage />
               </ProtectedRoute>
             }
@@ -173,7 +194,7 @@ export default function App() {
           <Route
             path="vikundi"
             element={
-              <ProtectedRoute permission="view">
+              <ProtectedRoute permission="view" section="groups">
                 <AdminGroupsPage />
               </ProtectedRoute>
             }
@@ -181,7 +202,7 @@ export default function App() {
           <Route
             path="reports"
             element={
-              <ProtectedRoute permission="view">
+              <ProtectedRoute permission="view" section="reports">
                 <AdminReportsPage />
               </ProtectedRoute>
             }
@@ -189,7 +210,7 @@ export default function App() {
           <Route
             path="matangazo"
             element={
-              <ProtectedRoute permission="view">
+              <ProtectedRoute permission="view" section="announcements">
                 <AdminAnnouncementsPage />
               </ProtectedRoute>
             }
@@ -197,7 +218,7 @@ export default function App() {
           <Route
             path="users"
             element={
-              <ProtectedRoute permission="view">
+              <ProtectedRoute permission="view" section="users">
                 <AdminUsersPage />
               </ProtectedRoute>
             }
@@ -205,7 +226,7 @@ export default function App() {
           <Route
             path="media"
             element={
-              <ProtectedRoute permission="view">
+              <ProtectedRoute permission="view" section="media">
                 <AdminMediaPage />
               </ProtectedRoute>
             }

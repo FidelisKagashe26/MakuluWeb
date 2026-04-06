@@ -5,13 +5,20 @@ import { useApiQuery } from "@/hooks/useApiQuery";
 import { createUser, deleteUser, fetchUsers, updateUser } from "@/services/adminService";
 import AppDropdown from "@/components/common/AppDropdown";
 import AdminTableSkeleton from "@/components/common/AdminTableSkeleton";
+import {
+  adminSectionOptions,
+  defaultSectionsByRole,
+  normalizeSections
+} from "@/lib/adminAccess";
+import type { AdminSection, Role } from "@/types/auth";
 
 type UserForm = {
   email: string;
   fullName: string;
-  role: "super_admin" | "admin" | "editor";
+  role: Role;
   password: string;
   status: "active" | "disabled";
+  allowedSections: AdminSection[];
 };
 
 const initialForm: UserForm = {
@@ -19,7 +26,8 @@ const initialForm: UserForm = {
   fullName: "",
   role: "editor",
   password: "Admin@123",
-  status: "active"
+  status: "active",
+  allowedSections: [...defaultSectionsByRole.editor]
 };
 
 const roleOptions = [
@@ -33,6 +41,10 @@ const statusOptions = [
   { value: "disabled", label: "Disabled" }
 ];
 
+function getRoleLabel(role: Role) {
+  return role.replace(/_/g, " ");
+}
+
 export default function AdminUsersPage() {
   const { user: currentUser, hasPermission } = useAuth();
   const [form, setForm] = useState<UserForm>(initialForm);
@@ -42,19 +54,45 @@ export default function AdminUsersPage() {
   const { data, isLoading, error, refetch } = useApiQuery(fetchUsers, []);
   const rows = useMemo(() => data ?? [], [data]);
 
+  const handleRoleChange = (nextRole: Role) => {
+    setForm((prev) => ({
+      ...prev,
+      role: nextRole,
+      allowedSections: [...defaultSectionsByRole[nextRole]]
+    }));
+  };
+
+  const toggleSection = (section: AdminSection) => {
+    setForm((prev) => {
+      const exists = prev.allowedSections.includes(section);
+      const next = exists
+        ? prev.allowedSections.filter((item) => item !== section)
+        : [...prev.allowedSections, section];
+
+      return {
+        ...prev,
+        allowedSections: normalizeSections(prev.role, next)
+      };
+    });
+  };
+
   const handleSubmit = async () => {
     try {
       if (editingId) {
         const payload: Record<string, unknown> = {
           fullName: form.fullName,
           role: form.role,
-          status: form.status
+          status: form.status,
+          allowedSections: normalizeSections(form.role, form.allowedSections)
         };
         if (form.password.trim()) payload.password = form.password;
         await updateUser(editingId, payload);
         toast.success("User updated.");
       } else {
-        await createUser(form);
+        await createUser({
+          ...form,
+          allowedSections: normalizeSections(form.role, form.allowedSections)
+        });
         toast.success("User created.");
       }
       setForm(initialForm);
@@ -72,7 +110,8 @@ export default function AdminUsersPage() {
       fullName: row.fullName ?? "",
       role: row.role ?? "editor",
       password: "",
-      status: row.status ?? "active"
+      status: row.status ?? "active",
+      allowedSections: normalizeSections(row.role ?? "editor", row.allowedSections)
     });
   };
 
@@ -120,7 +159,7 @@ export default function AdminUsersPage() {
             <AppDropdown
               value={form.role}
               options={roleOptions}
-              onChange={(value) => setForm((p) => ({ ...p, role: value as UserForm["role"] }))}
+              onChange={(value) => handleRoleChange(value as Role)}
             />
             <AppDropdown
               value={form.status}
@@ -156,6 +195,36 @@ export default function AdminUsersPage() {
                 )}
               </button>
             </div>
+
+            <div className="md:col-span-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">
+                Sections user can access
+              </p>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {adminSectionOptions.map((section) => {
+                  const checked = form.allowedSections.includes(section.key);
+                  return (
+                    <label
+                      key={section.key}
+                      className="flex cursor-pointer items-start gap-2 rounded-md border border-white/10 bg-white/[0.02] p-2"
+                    >
+                      <input
+                        type="checkbox"
+                        className="mt-1"
+                        checked={checked}
+                        onChange={() => toggleSection(section.key)}
+                      />
+                      <span>
+                        <span className="block text-sm font-semibold text-slate-100">
+                          {section.label}
+                        </span>
+                        <span className="block text-xs text-slate-400">{section.description}</span>
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
           <div className="mt-3 flex gap-2">
@@ -178,7 +247,7 @@ export default function AdminUsersPage() {
         </article>
       ) : null}
 
-      {isLoading ? <AdminTableSkeleton rows={6} columns={5} /> : null}
+      {isLoading ? <AdminTableSkeleton rows={6} columns={6} /> : null}
       {error ? <p className="text-sm text-rose-300">Failed to load users.</p> : null}
 
       <div className="overflow-x-auto rounded-md bg-white/[0.03]">
@@ -188,6 +257,7 @@ export default function AdminUsersPage() {
               <th className="px-3 py-2">Email</th>
               <th className="px-3 py-2">Name</th>
               <th className="px-3 py-2">Role</th>
+              <th className="px-3 py-2">Sections</th>
               <th className="px-3 py-2">Status</th>
               <th className="px-3 py-2">Actions</th>
             </tr>
@@ -197,7 +267,12 @@ export default function AdminUsersPage() {
               <tr key={row.id} className="border-t border-white/10">
                 <td className="px-3 py-2">{row.email}</td>
                 <td className="px-3 py-2">{row.fullName}</td>
-                <td className="px-3 py-2">{row.role}</td>
+                <td className="px-3 py-2 capitalize">{getRoleLabel(row.role)}</td>
+                <td className="px-3 py-2">
+                  <span className="rounded-full bg-white/[0.08] px-2 py-0.5 text-xs text-slate-200">
+                    {normalizeSections(row.role, row.allowedSections).length}
+                  </span>
+                </td>
                 <td className="px-3 py-2">{row.status}</td>
                 <td className="px-3 py-2">
                   <div className="flex gap-2">

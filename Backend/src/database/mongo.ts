@@ -4,6 +4,7 @@ import { env } from "../config/env.js";
 import { defaultSiteSettings } from "../data/defaultSiteSettings.js";
 import { generateId } from "../utils/id.js";
 import { ROLES, USER_STATUS } from "../utils/constants.js";
+import { getDefaultSectionsForRole } from "../services/rbacService.js";
 import { SiteSettingsDbModel } from "./models/siteSettingsDbModel.js";
 import { UserDbModel } from "./models/userDbModel.js";
 
@@ -34,6 +35,7 @@ async function seedCoreData() {
         fullName: "Super Admin",
         role: ROLES.SUPER_ADMIN,
         status: USER_STATUS.ACTIVE,
+        allowedSections: getDefaultSectionsForRole(ROLES.SUPER_ADMIN),
         passwordHash,
         failedAttempts: 0,
         lockedUntil: null,
@@ -47,6 +49,7 @@ async function seedCoreData() {
         fullName: "Admin User",
         role: ROLES.ADMIN,
         status: USER_STATUS.ACTIVE,
+        allowedSections: getDefaultSectionsForRole(ROLES.ADMIN),
         passwordHash,
         failedAttempts: 0,
         lockedUntil: null,
@@ -60,6 +63,7 @@ async function seedCoreData() {
         fullName: "Editor User",
         role: ROLES.EDITOR,
         status: USER_STATUS.ACTIVE,
+        allowedSections: getDefaultSectionsForRole(ROLES.EDITOR),
         passwordHash,
         failedAttempts: 0,
         lockedUntil: null,

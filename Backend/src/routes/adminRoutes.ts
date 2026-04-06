@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authenticate } from "../middleware/authMiddleware.js";
-import { requirePermission } from "../middleware/permissionMiddleware.js";
-import { PERMISSIONS, ROLES } from "../utils/constants.js";
+import { requireAnySection, requireSection } from "../middleware/permissionMiddleware.js";
+import { ADMIN_SECTIONS, PERMISSIONS, ROLE_PERMISSIONS, ROLE_SECTION_ACCESS, ROLES } from "../utils/constants.js";
 import { getDashboardStats } from "../controllers/dashboardController.js";
 import { getSettings, saveSettings } from "../controllers/siteSettingsController.js";
 import {
@@ -70,145 +70,168 @@ router.use(authenticate);
 
 router.get(
   "/dashboard",
-  requirePermission(PERMISSIONS.VIEW),
+  requireSection(ADMIN_SECTIONS.DASHBOARD, PERMISSIONS.VIEW),
   getDashboardStats
 );
 
-router.get("/site-settings", requirePermission(PERMISSIONS.UPDATE), getSettings);
-router.put("/site-settings", requirePermission(PERMISSIONS.UPDATE), saveSettings);
+router.get(
+  "/site-settings",
+  requireAnySection([ADMIN_SECTIONS.SETTINGS, ADMIN_SECTIONS.LIBRARY], PERMISSIONS.UPDATE),
+  getSettings
+);
+router.put(
+  "/site-settings",
+  requireAnySection([ADMIN_SECTIONS.SETTINGS, ADMIN_SECTIONS.LIBRARY], PERMISSIONS.UPDATE),
+  saveSettings
+);
 router.post(
   "/uploads/image",
-  requirePermission(PERMISSIONS.UPDATE),
+  requireAnySection(
+    [
+      ADMIN_SECTIONS.SETTINGS,
+      ADMIN_SECTIONS.LIBRARY,
+      ADMIN_SECTIONS.MEDIA,
+      ADMIN_SECTIONS.ANNOUNCEMENTS,
+      ADMIN_SECTIONS.DEPARTMENTS,
+      ADMIN_SECTIONS.LEADERS,
+      ADMIN_SECTIONS.GROUPS
+    ],
+    PERMISSIONS.UPDATE
+  ),
   uploadImage,
   compressUploadedImage,
   uploadImageHandler
 );
 router.post(
   "/uploads/document",
-  requirePermission(PERMISSIONS.UPDATE),
+  requireAnySection([ADMIN_SECTIONS.LIBRARY, ADMIN_SECTIONS.REPORTS], PERMISSIONS.UPDATE),
   uploadDocument,
   uploadDocumentHandler
 );
 
-router.get("/departments", requirePermission(PERMISSIONS.VIEW), getDepartments);
-router.get("/departments/:departmentId", requirePermission(PERMISSIONS.VIEW), getDepartmentDetail);
-router.post("/departments", requirePermission(PERMISSIONS.CREATE), createDepartmentHandler);
-router.put("/departments/:departmentId", requirePermission(PERMISSIONS.UPDATE), updateDepartmentHandler);
+router.get("/departments", requireSection(ADMIN_SECTIONS.DEPARTMENTS, PERMISSIONS.VIEW), getDepartments);
+router.get("/departments/:departmentId", requireSection(ADMIN_SECTIONS.DEPARTMENTS, PERMISSIONS.VIEW), getDepartmentDetail);
+router.post("/departments", requireSection(ADMIN_SECTIONS.DEPARTMENTS, PERMISSIONS.CREATE), createDepartmentHandler);
+router.put("/departments/:departmentId", requireSection(ADMIN_SECTIONS.DEPARTMENTS, PERMISSIONS.UPDATE), updateDepartmentHandler);
 router.delete(
   "/departments/:departmentId",
-  requirePermission(PERMISSIONS.DELETE),
+  requireSection(ADMIN_SECTIONS.DEPARTMENTS, PERMISSIONS.DELETE),
   deleteDepartmentHandler
 );
 
 router.post(
   "/departments/:departmentId/committee",
-  requirePermission(PERMISSIONS.CREATE),
+  requireSection(ADMIN_SECTIONS.DEPARTMENTS, PERMISSIONS.CREATE),
   createCommitteeMemberHandler
 );
 router.put(
   "/departments/:departmentId/committee/:memberId",
-  requirePermission(PERMISSIONS.UPDATE),
+  requireSection(ADMIN_SECTIONS.DEPARTMENTS, PERMISSIONS.UPDATE),
   updateCommitteeMemberHandler
 );
 router.delete(
   "/departments/:departmentId/committee/:memberId",
-  requirePermission(PERMISSIONS.DELETE),
+  requireSection(ADMIN_SECTIONS.DEPARTMENTS, PERMISSIONS.DELETE),
   deleteCommitteeMemberHandler
 );
 
 router.post(
   "/departments/:departmentId/reports",
-  requirePermission(PERMISSIONS.CREATE),
+  requireSection(ADMIN_SECTIONS.DEPARTMENTS, PERMISSIONS.CREATE),
   createDepartmentReportHandler
 );
 router.put(
   "/departments/:departmentId/reports/:reportId",
-  requirePermission(PERMISSIONS.UPDATE),
+  requireSection(ADMIN_SECTIONS.DEPARTMENTS, PERMISSIONS.UPDATE),
   updateDepartmentReportHandler
 );
 router.delete(
   "/departments/:departmentId/reports/:reportId",
-  requirePermission(PERMISSIONS.DELETE),
+  requireSection(ADMIN_SECTIONS.DEPARTMENTS, PERMISSIONS.DELETE),
   deleteDepartmentReportHandler
 );
 
-router.get("/leaders", requirePermission(PERMISSIONS.VIEW), getLeaders);
-router.post("/leaders", requirePermission(PERMISSIONS.CREATE), createLeaderHandler);
-router.put("/leaders/:leaderId", requirePermission(PERMISSIONS.UPDATE), updateLeaderHandler);
-router.delete("/leaders/:leaderId", requirePermission(PERMISSIONS.DELETE), deleteLeaderHandler);
+router.get("/leaders", requireSection(ADMIN_SECTIONS.LEADERS, PERMISSIONS.VIEW), getLeaders);
+router.post("/leaders", requireSection(ADMIN_SECTIONS.LEADERS, PERMISSIONS.CREATE), createLeaderHandler);
+router.put("/leaders/:leaderId", requireSection(ADMIN_SECTIONS.LEADERS, PERMISSIONS.UPDATE), updateLeaderHandler);
+router.delete("/leaders/:leaderId", requireSection(ADMIN_SECTIONS.LEADERS, PERMISSIONS.DELETE), deleteLeaderHandler);
 
-router.get("/groups", requirePermission(PERMISSIONS.VIEW), getGroups);
-router.post("/groups", requirePermission(PERMISSIONS.CREATE), createGroupHandler);
-router.put("/groups/:groupId", requirePermission(PERMISSIONS.UPDATE), updateGroupHandler);
-router.delete("/groups/:groupId", requirePermission(PERMISSIONS.DELETE), deleteGroupHandler);
+router.get("/groups", requireSection(ADMIN_SECTIONS.GROUPS, PERMISSIONS.VIEW), getGroups);
+router.post("/groups", requireSection(ADMIN_SECTIONS.GROUPS, PERMISSIONS.CREATE), createGroupHandler);
+router.put("/groups/:groupId", requireSection(ADMIN_SECTIONS.GROUPS, PERMISSIONS.UPDATE), updateGroupHandler);
+router.delete("/groups/:groupId", requireSection(ADMIN_SECTIONS.GROUPS, PERMISSIONS.DELETE), deleteGroupHandler);
 
-router.get("/reports", requirePermission(PERMISSIONS.VIEW), getReports);
+router.get("/reports", requireSection(ADMIN_SECTIONS.REPORTS, PERMISSIONS.VIEW), getReports);
 router.post(
   "/reports",
-  requirePermission(PERMISSIONS.CREATE),
+  requireSection(ADMIN_SECTIONS.REPORTS, PERMISSIONS.CREATE),
   uploadReportFiles,
   createReportHandler
 );
 router.put(
   "/reports/:reportId",
-  requirePermission(PERMISSIONS.UPDATE),
+  requireSection(ADMIN_SECTIONS.REPORTS, PERMISSIONS.UPDATE),
   uploadReportFiles,
   updateReportHandler
 );
-router.delete("/reports/:reportId", requirePermission(PERMISSIONS.DELETE), deleteReportHandler);
+router.delete("/reports/:reportId", requireSection(ADMIN_SECTIONS.REPORTS, PERMISSIONS.DELETE), deleteReportHandler);
 router.get(
   "/reports/:reportId/attachments/:attachmentId/download",
-  requirePermission(PERMISSIONS.VIEW),
+  requireSection(ADMIN_SECTIONS.REPORTS, PERMISSIONS.VIEW),
   downloadReportAttachment
 );
 
-router.get("/announcements", requirePermission(PERMISSIONS.VIEW), getAnnouncements);
+router.get("/announcements", requireSection(ADMIN_SECTIONS.ANNOUNCEMENTS, PERMISSIONS.VIEW), getAnnouncements);
 router.post(
   "/announcements",
-  requirePermission(PERMISSIONS.PUBLISH),
+  requireSection(ADMIN_SECTIONS.ANNOUNCEMENTS, PERMISSIONS.PUBLISH),
   createAnnouncementHandler
 );
 router.put(
   "/announcements/:announcementId",
-  requirePermission(PERMISSIONS.PUBLISH),
+  requireSection(ADMIN_SECTIONS.ANNOUNCEMENTS, PERMISSIONS.PUBLISH),
   updateAnnouncementHandler
 );
 router.delete(
   "/announcements/:announcementId",
-  requirePermission(PERMISSIONS.DELETE),
+  requireSection(ADMIN_SECTIONS.ANNOUNCEMENTS, PERMISSIONS.DELETE),
   deleteAnnouncementHandler
 );
 
-router.get("/media", requirePermission(PERMISSIONS.VIEW), getMedia);
-router.post("/media", requirePermission(PERMISSIONS.CREATE), createMediaHandler);
-router.put("/media/:mediaId", requirePermission(PERMISSIONS.UPDATE), updateMediaHandler);
-router.delete("/media/:mediaId", requirePermission(PERMISSIONS.DELETE), deleteMediaHandler);
-router.get("/media-categories", requirePermission(PERMISSIONS.VIEW), getMediaCategories);
+router.get("/media", requireSection(ADMIN_SECTIONS.MEDIA, PERMISSIONS.VIEW), getMedia);
+router.post("/media", requireSection(ADMIN_SECTIONS.MEDIA, PERMISSIONS.CREATE), createMediaHandler);
+router.put("/media/:mediaId", requireSection(ADMIN_SECTIONS.MEDIA, PERMISSIONS.UPDATE), updateMediaHandler);
+router.delete("/media/:mediaId", requireSection(ADMIN_SECTIONS.MEDIA, PERMISSIONS.DELETE), deleteMediaHandler);
+router.get("/media-categories", requireSection(ADMIN_SECTIONS.MEDIA, PERMISSIONS.VIEW), getMediaCategories);
 router.post(
   "/media-categories",
-  requirePermission(PERMISSIONS.CREATE),
+  requireSection(ADMIN_SECTIONS.MEDIA, PERMISSIONS.CREATE),
   createMediaCategoryHandler
 );
 router.put(
   "/media-categories/:categoryId",
-  requirePermission(PERMISSIONS.UPDATE),
+  requireSection(ADMIN_SECTIONS.MEDIA, PERMISSIONS.UPDATE),
   updateMediaCategoryHandler
 );
 router.delete(
   "/media-categories/:categoryId",
-  requirePermission(PERMISSIONS.DELETE),
+  requireSection(ADMIN_SECTIONS.MEDIA, PERMISSIONS.DELETE),
   deleteMediaCategoryHandler
 );
 
-router.get("/users", requirePermission(PERMISSIONS.VIEW), getUsers);
-router.post("/users", requirePermission(PERMISSIONS.CREATE), createUserHandler);
-router.put("/users/:userId", requirePermission(PERMISSIONS.UPDATE), updateUserHandler);
-router.delete("/users/:userId", requirePermission(PERMISSIONS.DELETE), deleteUserHandler);
+router.get("/users", requireSection(ADMIN_SECTIONS.USERS, PERMISSIONS.VIEW), getUsers);
+router.post("/users", requireSection(ADMIN_SECTIONS.USERS, PERMISSIONS.CREATE), createUserHandler);
+router.put("/users/:userId", requireSection(ADMIN_SECTIONS.USERS, PERMISSIONS.UPDATE), updateUserHandler);
+router.delete("/users/:userId", requireSection(ADMIN_SECTIONS.USERS, PERMISSIONS.DELETE), deleteUserHandler);
 
-router.get("/roles", (_req, res) => {
+router.get("/roles", requireSection(ADMIN_SECTIONS.USERS, PERMISSIONS.VIEW), (_req, res) => {
   res.json({
     ok: true,
-    data: Object.values(ROLES)
+    data: {
+      roles: Object.values(ROLES),
+      permissions: ROLE_PERMISSIONS,
+      sections: ROLE_SECTION_ACCESS
+    }
   });
 });
 

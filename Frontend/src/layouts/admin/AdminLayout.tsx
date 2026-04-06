@@ -1,12 +1,14 @@
-﻿import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
+import type { AdminSection } from "@/types/auth";
 
 type NavItem = {
   label: string;
   to: string;
+  section: AdminSection;
   icon: ReactNode;
   requires?: Array<"view" | "create" | "update" | "delete" | "publish">;
 };
@@ -101,16 +103,16 @@ function IconMedia() {
 }
 
 const navItems: NavItem[] = [
-  { label: "Dashboard", to: "/admin/dashboard", icon: <IconDashboard />, requires: ["view"] },
-  { label: "Settings", to: "/admin/settings", icon: <IconSettings />, requires: ["update"] },
-  { label: "Maktaba", to: "/admin/maktaba", icon: <IconLibrary />, requires: ["update"] },
-  { label: "Departments", to: "/admin/idara", icon: <IconDepartment />, requires: ["view"] },
-  { label: "Leaders", to: "/admin/viongozi", icon: <IconLeaders />, requires: ["view"] },
-  { label: "Groups", to: "/admin/vikundi", icon: <IconGroups />, requires: ["view"] },
-  { label: "Reports", to: "/admin/reports", icon: <IconReports />, requires: ["view"] },
-  { label: "Media", to: "/admin/media", icon: <IconMedia />, requires: ["view"] },
-  { label: "Announcements", to: "/admin/matangazo", icon: <IconAnnouncement />, requires: ["view"] },
-  { label: "Users", to: "/admin/users", icon: <IconUsers />, requires: ["view"] }
+  { label: "Dashboard", to: "/admin/dashboard", section: "dashboard", icon: <IconDashboard />, requires: ["view"] },
+  { label: "Settings", to: "/admin/settings", section: "settings", icon: <IconSettings />, requires: ["update"] },
+  { label: "Maktaba", to: "/admin/maktaba", section: "library", icon: <IconLibrary />, requires: ["update"] },
+  { label: "Departments", to: "/admin/idara", section: "departments", icon: <IconDepartment />, requires: ["view"] },
+  { label: "Leaders", to: "/admin/viongozi", section: "leaders", icon: <IconLeaders />, requires: ["view"] },
+  { label: "Groups", to: "/admin/vikundi", section: "groups", icon: <IconGroups />, requires: ["view"] },
+  { label: "Reports", to: "/admin/reports", section: "reports", icon: <IconReports />, requires: ["view"] },
+  { label: "Media", to: "/admin/media", section: "media", icon: <IconMedia />, requires: ["view"] },
+  { label: "Announcements", to: "/admin/matangazo", section: "announcements", icon: <IconAnnouncement />, requires: ["view"] },
+  { label: "Users", to: "/admin/users", section: "users", icon: <IconUsers />, requires: ["view"] }
 ];
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
@@ -127,7 +129,7 @@ function getCurrentSection(pathname: string) {
 }
 
 export default function AdminLayout() {
-  const { user, logout, hasPermission } = useAuth();
+  const { user, logout, hasPermission, hasSectionAccess } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const { i18n } = useTranslation();
   const navigate = useNavigate();
@@ -139,9 +141,10 @@ export default function AdminLayout() {
   const items = useMemo(
     () =>
       navItems.filter((item) =>
+        hasSectionAccess(item.section) &&
         (item.requires || []).every((permission) => hasPermission(permission))
       ),
-    [hasPermission]
+    [hasPermission, hasSectionAccess]
   );
 
   const currentSection = getCurrentSection(location.pathname);
@@ -297,20 +300,24 @@ export default function AdminLayout() {
                     <p className="text-sm text-slate-900 dark:text-white">{user?.status || "active"}</p>
 
                     <div className="mt-3 grid gap-2">
-                      <NavLink
-                        to="/admin/account"
-                        className="admin-btn-ghost w-full justify-center"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        My Account
-                      </NavLink>
-                      <NavLink
-                        to="/admin/change-password"
-                        className="admin-btn-ghost w-full justify-center"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        Change Password
-                      </NavLink>
+                      {hasSectionAccess("account") ? (
+                        <>
+                          <NavLink
+                            to="/admin/account"
+                            className="admin-btn-ghost w-full justify-center"
+                            onClick={() => setUserMenuOpen(false)}
+                          >
+                            My Account
+                          </NavLink>
+                          <NavLink
+                            to="/admin/change-password"
+                            className="admin-btn-ghost w-full justify-center"
+                            onClick={() => setUserMenuOpen(false)}
+                          >
+                            Change Password
+                          </NavLink>
+                        </>
+                      ) : null}
                       <button type="button" onClick={handleLogout} className="admin-btn-danger w-full">
                         Sign out
                       </button>
@@ -375,3 +382,4 @@ export default function AdminLayout() {
     </div>
   );
 }
+

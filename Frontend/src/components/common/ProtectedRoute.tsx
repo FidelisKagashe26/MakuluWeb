@@ -1,14 +1,15 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import type { Permission } from "@/types/auth";
+import type { AdminSection, Permission } from "@/types/auth";
 
 type ProtectedRouteProps = {
   children: JSX.Element;
   permission?: Permission;
+  section?: AdminSection;
 };
 
-export default function ProtectedRoute({ children, permission }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, hasPermission } = useAuth();
+export default function ProtectedRoute({ children, permission, section }: ProtectedRouteProps) {
+  const { isAuthenticated, isLoading, hasPermission, hasSectionAccess } = useAuth();
 
   if (isLoading) {
     return (
@@ -30,6 +31,17 @@ export default function ProtectedRoute({ children, permission }: ProtectedRouteP
         <h2 className="text-xl font-bold text-slate-900 dark:text-white">Hakuna Ruhusa</h2>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
           Huna ruhusa ya kufungua ukurasa huu.
+        </p>
+      </section>
+    );
+  }
+
+  if (section && !hasSectionAccess(section)) {
+    return (
+      <section className="surface-card">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Hakuna Ruhusa</h2>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+          Huna ruhusa ya kufungua sehemu hii ya admin.
         </p>
       </section>
     );

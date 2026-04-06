@@ -8,7 +8,8 @@ import {
   listUsers,
   updateUser
 } from "../models/userModel.js";
-import { ROLES, USER_STATUS } from "../utils/constants.js";
+import { ALL_ADMIN_SECTIONS, ROLES, USER_STATUS } from "../utils/constants.js";
+import { normalizeAllowedSections } from "../services/rbacService.js";
 
 function safeUser(user: any) {
   return {
@@ -17,6 +18,7 @@ function safeUser(user: any) {
     fullName: user.fullName,
     role: user.role,
     status: user.status,
+    allowedSections: normalizeAllowedSections(user.role, user.allowedSections),
     createdAt: user.createdAt,
     lastLoginAt: user.lastLoginAt
   };
@@ -32,7 +34,7 @@ export async function getUsers(_req: Request, res: Response) {
 }
 
 export async function createUserHandler(req: Request, res: Response) {
-  const { email, password, fullName, role } = req.body || {};
+  const { email, password, fullName, role, allowedSections } = req.body || {};
 
   if (!email || !password || !fullName || !role) {
     return res
@@ -42,6 +44,14 @@ export async function createUserHandler(req: Request, res: Response) {
 
   if (!Object.values(ROLES).includes(role)) {
     return res.status(400).json({ ok: false, message: "Role sio sahihi." });
+  }
+
+  const normalizedAllowedSections = normalizeAllowedSections(role, allowedSections);
+  const hasInvalidSections =
+    Array.isArray(allowedSections) &&
+    allowedSections.some((entry) => !ALL_ADMIN_SECTIONS.includes(String(entry || "").trim()));
+  if (hasInvalidSections) {
+    return res.status(400).json({ ok: false, message: "Sehemu (sections) ulizotuma si sahihi." });
   }
 
   try {
@@ -54,6 +64,7 @@ export async function createUserHandler(req: Request, res: Response) {
       email: String(email).toLowerCase(),
       fullName,
       role,
+      allowedSections: normalizedAllowedSections,
       passwordHash
     });
 
@@ -85,6 +96,14 @@ export async function updateUserHandler(req: Request, res: Response) {
     const nextStatus = updates.status;
     if (nextStatus && !Object.values(USER_STATUS).includes(nextStatus)) {
       return res.status(400).json({ ok: false, message: "Status sio sahihi." });
+    }
+
+    const nextAllowedSections = updates.allowedSections;
+    if (
+      Array.isArray(nextAllowedSections) &&
+      nextAllowedSections.some((entry: unknown) => !ALL_ADMIN_SECTIONS.includes(String(entry || "").trim()))
+    ) {
+      return res.status(400).json({ ok: false, message: "Sehemu (sections) ulizotuma si sahihi." });
     }
 
     const updated = await updateUser(user.id, updates);
