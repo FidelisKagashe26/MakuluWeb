@@ -4,6 +4,7 @@ import { useApiQuery } from "@/hooks/useApiQuery";
 import { createLeader, deleteLeader, fetchLeaders, updateLeader } from "@/services/adminService";
 import { useAuth } from "@/context/AuthContext";
 import AppDropdown from "@/components/common/AppDropdown";
+import AdminTableSkeleton from "@/components/common/AdminTableSkeleton";
 
 type LeaderForm = {
   name: string;
@@ -111,7 +112,7 @@ export default function AdminLeadersPage() {
         </article>
       ) : null}
 
-      {isLoading ? <p className="text-sm text-slate-300">Loading leaders...</p> : null}
+      {isLoading ? <AdminTableSkeleton rows={6} columns={4} /> : null}
       {error ? <p className="text-sm text-rose-300">Failed to load leaders.</p> : null}
 
       <div className="overflow-x-auto rounded-md bg-white/[0.03]">

@@ -182,7 +182,16 @@ export default function AnnouncementsPage() {
             </h3>
 
             <div className="mt-3 space-y-2">
-              {isLoading ? <p className="px-2 text-sm text-slate-500 dark:text-slate-300">Loading...</p> : null}
+              {isLoading ? (
+                <div className="space-y-2 px-1">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <div
+                      key={`announcement-menu-skeleton-${index}`}
+                      className="h-16 animate-pulse rounded-xl border border-slate-200 bg-slate-200/75 dark:border-white/10 dark:bg-white/[0.08]"
+                    />
+                  ))}
+                </div>
+              ) : null}
               {!isLoading && filteredItems.length === 0 ? (
                 <p className="px-2 text-sm text-slate-500 dark:text-slate-300">Hakuna matangazo kwenye aina hii.</p>
               ) : null}
@@ -217,6 +226,23 @@ export default function AnnouncementsPage() {
           </aside>
 
           <div className="space-y-4">
+            {isLoading ? (
+              <article className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-soft dark:border-white/10 dark:bg-slate-900/60">
+                <div className="h-6 w-56 animate-pulse rounded bg-slate-200 dark:bg-white/[0.08]" />
+                <div className="h-10 w-2/3 animate-pulse rounded bg-slate-200 dark:bg-white/[0.08]" />
+                <div className="h-4 w-1/3 animate-pulse rounded bg-slate-200 dark:bg-white/[0.06]" />
+                <div className="space-y-2">
+                  <div className="h-4 w-full animate-pulse rounded bg-slate-200 dark:bg-white/[0.06]" />
+                  <div className="h-4 w-11/12 animate-pulse rounded bg-slate-200 dark:bg-white/[0.06]" />
+                  <div className="h-4 w-9/12 animate-pulse rounded bg-slate-200 dark:bg-white/[0.06]" />
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="h-52 animate-pulse rounded-xl bg-slate-200 dark:bg-white/[0.06]" />
+                  <div className="h-52 animate-pulse rounded-xl bg-slate-200 dark:bg-white/[0.06]" />
+                </div>
+              </article>
+            ) : null}
+
             {error ? (
               <div className="rounded-2xl border border-rose-300 bg-rose-50/70 p-4 text-sm text-rose-700 dark:border-rose-400/45 dark:bg-rose-900/25 dark:text-rose-200">
                 Imeshindikana kupakia matangazo.
@@ -229,7 +255,7 @@ export default function AnnouncementsPage() {
               </div>
             ) : null}
 
-            {selectedAnnouncement ? (
+            {!isLoading && selectedAnnouncement ? (
               <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft dark:border-white/10 dark:bg-slate-900/60">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>

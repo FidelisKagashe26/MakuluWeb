@@ -30,7 +30,24 @@ export default function AdminDashboardPage() {
   }, [activitiesPage, totalActivityPages]);
 
   if (isLoading) {
-    return <p className="text-sm text-slate-300">Loading dashboard...</p>;
+    return (
+      <div className="space-y-5">
+        <div className="h-20 animate-pulse rounded-md bg-white/[0.05]" />
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div
+              key={`dashboard-card-skeleton-${index}`}
+              className="h-24 animate-pulse rounded-md bg-white/[0.05]"
+            />
+          ))}
+        </div>
+        <div className="space-y-2 rounded-md bg-white/[0.03] p-4">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={`dashboard-activity-skeleton-${index}`} className="h-14 animate-pulse rounded-md bg-white/[0.05]" />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (error || !data) {

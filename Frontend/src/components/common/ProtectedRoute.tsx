@@ -12,8 +12,10 @@ export default function ProtectedRoute({ children, permission }: ProtectedRouteP
 
   if (isLoading) {
     return (
-      <section className="surface-card">
-        <p className="text-sm text-slate-600 dark:text-slate-300">Inapakia session...</p>
+      <section className="space-y-3 rounded-xl border border-white/15 bg-white/[0.03] p-4">
+        <div className="h-4 w-40 animate-pulse rounded bg-white/[0.12]" />
+        <div className="h-10 w-full animate-pulse rounded bg-white/[0.08]" />
+        <div className="h-10 w-10/12 animate-pulse rounded bg-white/[0.06]" />
       </section>
     );
   }

@@ -5,6 +5,7 @@ import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { createGroup, deleteGroup, fetchGroups, updateGroup } from "@/services/adminService";
 import { toYouTubeEmbedUrl } from "@/lib/youtube";
 import { useAuth } from "@/context/AuthContext";
+import AdminTableSkeleton from "@/components/common/AdminTableSkeleton";
 
 type GroupForm = {
   name: string;
@@ -128,7 +129,7 @@ export default function AdminGroupsPage() {
         </article>
       ) : null}
 
-      {isLoading ? <p className="text-sm text-slate-300">Loading groups...</p> : null}
+      {isLoading ? <AdminTableSkeleton rows={6} columns={4} /> : null}
       {error ? <p className="text-sm text-rose-300">Failed to load groups.</p> : null}
 
       <div className="overflow-x-auto rounded-md bg-white/[0.03]">

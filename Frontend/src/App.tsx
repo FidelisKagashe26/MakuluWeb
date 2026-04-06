@@ -1,11 +1,14 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import Navbar from "@/components/hero/Navbar";
 import SiteFooter from "@/components/layout/SiteFooter";
-import SectionSkeleton from "@/components/common/SectionSkeleton";
+import PageSkeleton from "@/components/common/PageSkeleton";
+import GlobalLoadingOverlay from "@/components/common/GlobalLoadingOverlay";
 import ProtectedRoute from "@/components/common/ProtectedRoute";
 import AdminLayout from "@/layouts/admin/AdminLayout";
+import { useAuth } from "@/context/AuthContext";
+import { getPendingApiRequestsCount, subscribePendingApiRequests } from "@/lib/api";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const AdminLoginPage = lazy(() => import("./pages/admin/AdminLoginPage"));
@@ -44,6 +47,7 @@ function NotFoundPage() {
 }
 
 export default function App() {
+  const { isLoading: isAuthLoading } = useAuth();
   const location = useLocation();
   const isAdminPanel = location.pathname.startsWith("/admin");
   const isHomePage = location.pathname === "/" || location.pathname === "/home";
@@ -60,8 +64,33 @@ export default function App() {
         ? "flex-1 pt-24"
         : "flex-1 pb-8 pt-24";
 
+  const [pendingApiRequests, setPendingApiRequests] = useState<number>(
+    getPendingApiRequestsCount()
+  );
+  const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
+
+  useEffect(() => {
+    return subscribePendingApiRequests((count) => {
+      setPendingApiRequests(count);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isInitialLoadComplete) return;
+    if (isAuthLoading || pendingApiRequests > 0) return;
+
+    const readyTimer = window.setTimeout(() => {
+      setIsInitialLoadComplete(true);
+    }, 120);
+
+    return () => window.clearTimeout(readyTimer);
+  }, [isAuthLoading, isInitialLoadComplete, pendingApiRequests]);
+
+  const showGlobalLoadingOverlay =
+    !isInitialLoadComplete && (isAuthLoading || pendingApiRequests > 0);
+
   const routes = (
-    <Suspense fallback={<SectionSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/home" element={<Navigate to="/" replace />} />
@@ -208,6 +237,7 @@ export default function App() {
       </motion.main>
 
       {!isAdminPanel ? <SiteFooter /> : null}
+      <GlobalLoadingOverlay visible={showGlobalLoadingOverlay} />
     </div>
   );
 }

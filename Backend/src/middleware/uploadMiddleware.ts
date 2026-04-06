@@ -18,16 +18,30 @@ const storage = multer.diskStorage({
   }
 });
 
-const imageMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const imageMimeTypes = ["image/*"];
 const reportMimeTypes = [...imageMimeTypes, "application/pdf"];
 const documentMimeTypes = ["application/pdf"];
 
-function buildUpload(allowedMimes, maxFileSize = 8 * 1024 * 1024) {
+function allowsMimeType(allowedMimes: string[], mimeType: string) {
+  return allowedMimes.some((rule) => {
+    if (rule.endsWith("/*")) {
+      const prefix = rule.slice(0, rule.indexOf("/"));
+      return mimeType.startsWith(`${prefix}/`);
+    }
+    return rule === mimeType;
+  });
+}
+
+function buildUpload(allowedMimes: string[], maxFileSize?: number) {
+  const limits = Number.isFinite(maxFileSize as number)
+    ? { fileSize: Number(maxFileSize) }
+    : undefined;
+
   return multer({
     storage,
-    limits: { fileSize: maxFileSize },
+    limits,
     fileFilter: (_req, file, cb) => {
-      if (allowedMimes.includes(file.mimetype)) {
+      if (allowsMimeType(allowedMimes, String(file.mimetype || ""))) {
         cb(null, true);
       } else {
         cb(new Error("Aina ya file hairuhusiwi."));
@@ -36,6 +50,6 @@ function buildUpload(allowedMimes, maxFileSize = 8 * 1024 * 1024) {
   });
 }
 
-export const uploadImage = buildUpload(imageMimeTypes).single("image");
-export const uploadReportFiles = buildUpload(reportMimeTypes).array("attachments", 5);
+export const uploadImage = buildUpload(imageMimeTypes, 512 * 1024 * 1024).single("image");
+export const uploadReportFiles = buildUpload(reportMimeTypes, 25 * 1024 * 1024).array("attachments", 5);
 export const uploadDocument = buildUpload(documentMimeTypes, 25 * 1024 * 1024).single("document");

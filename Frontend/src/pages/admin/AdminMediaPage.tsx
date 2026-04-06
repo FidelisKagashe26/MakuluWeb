@@ -458,7 +458,16 @@ export default function AdminMediaPage() {
               </span>
             </div>
 
-            {isCategoriesLoading ? <p className="text-sm text-slate-300">Loading categories...</p> : null}
+            {isCategoriesLoading ? (
+              <div className="space-y-2">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    key={`category-skeleton-${index}`}
+                    className="h-10 animate-pulse rounded-md bg-white/[0.07]"
+                  />
+                ))}
+              </div>
+            ) : null}
             {!isCategoriesLoading && categories.length === 0 ? (
               <p className="text-sm text-slate-300">No categories yet. Add one first.</p>
             ) : null}
@@ -708,7 +717,16 @@ export default function AdminMediaPage() {
         </article>
       ) : null}
 
-      {isLoading ? <p className="text-sm text-slate-300">Loading media...</p> : null}
+      {isLoading ? (
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div
+              key={`media-card-skeleton-${index}`}
+              className="h-64 animate-pulse rounded-md border border-white/15 bg-white/[0.04]"
+            />
+          ))}
+        </div>
+      ) : null}
       {error ? <p className="text-sm text-rose-300">Failed to load media.</p> : null}
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

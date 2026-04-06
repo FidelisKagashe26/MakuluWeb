@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useApiQuery } from "@/hooks/useApiQuery";
 import { createUser, deleteUser, fetchUsers, updateUser } from "@/services/adminService";
 import AppDropdown from "@/components/common/AppDropdown";
+import AdminTableSkeleton from "@/components/common/AdminTableSkeleton";
 
 type UserForm = {
   email: string;
@@ -177,7 +178,7 @@ export default function AdminUsersPage() {
         </article>
       ) : null}
 
-      {isLoading ? <p className="text-sm text-slate-300">Loading users...</p> : null}
+      {isLoading ? <AdminTableSkeleton rows={6} columns={5} /> : null}
       {error ? <p className="text-sm text-rose-300">Failed to load users.</p> : null}
 
       <div className="overflow-x-auto rounded-md bg-white/[0.03]">

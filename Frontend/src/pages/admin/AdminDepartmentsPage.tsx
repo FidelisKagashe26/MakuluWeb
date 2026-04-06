@@ -16,6 +16,7 @@ import {
 } from "@/services/adminService";
 import { useAuth } from "@/context/AuthContext";
 import AppDropdown from "@/components/common/AppDropdown";
+import AdminTableSkeleton from "@/components/common/AdminTableSkeleton";
 
 type DepartmentForm = {
   name: string;
@@ -251,7 +252,7 @@ export default function AdminDepartmentsPage() {
         </article>
       ) : null}
 
-      {isLoading ? <p className="text-sm text-slate-300">Loading departments...</p> : null}
+      {isLoading ? <AdminTableSkeleton rows={6} columns={3} /> : null}
       {error ? <p className="text-sm text-rose-300">Failed to load departments.</p> : null}
 
       <div className="overflow-x-auto rounded-md bg-white/[0.03]">

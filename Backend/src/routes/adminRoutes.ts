@@ -61,6 +61,7 @@ import {
   updateUserHandler
 } from "../controllers/usersController.js";
 import { uploadDocument, uploadImage, uploadReportFiles } from "../middleware/uploadMiddleware.js";
+import { compressUploadedImage } from "../middleware/imageCompressionMiddleware.js";
 import { uploadDocumentHandler, uploadImageHandler } from "../controllers/uploadController.js";
 
 const router = Router();
@@ -79,6 +80,7 @@ router.post(
   "/uploads/image",
   requirePermission(PERMISSIONS.UPDATE),
   uploadImage,
+  compressUploadedImage,
   uploadImageHandler
 );
 router.post(
