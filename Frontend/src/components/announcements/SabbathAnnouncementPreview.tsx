@@ -105,8 +105,8 @@ export default function SabbathAnnouncementPreview({
   const nextWeekRows = document.nextWeekSabbathWorkers.filter((row) => row.role || row.chairperson);
   const deacons = document.deaconsOnDuty.filter(Boolean);
   const fellowshipRows = document.fellowship.filter((row) => row.name || row.fromChurch || row.toChurch);
-  const railWidth = compact ? 50 : 74;
-  const contentRightPadding = compact ? 54 : 78;
+  const railWidth = compact ? 40 : 74;
+  const contentRightPadding = compact ? 44 : 78;
   const shellClasses = compact
     ? "sabbath-preview-shell overflow-hidden rounded-2xl border border-white/10 bg-[#0a1438]/70 shadow-none"
     : "sabbath-preview-shell overflow-hidden rounded-[24px] border border-slate-200 bg-slate-100 shadow-[0_16px_38px_rgba(15,23,42,0.1)]";
@@ -131,12 +131,12 @@ export default function SabbathAnnouncementPreview({
           <div className="absolute inset-y-0 right-0 bg-[#c6d1eb]" style={{ width: `${railWidth}px` }} />
           <div
             className="absolute right-0 top-0 flex justify-center bg-[#214d81]"
-            style={{ width: `${railWidth}px`, paddingTop: compact ? "4px" : "8px", paddingBottom: compact ? "4px" : "8px" }}
+            style={{ width: `${railWidth}px`, paddingTop: compact ? "3px" : "8px", paddingBottom: compact ? "3px" : "8px" }}
           >
             <img
               src="/adventistLogo.png"
               alt="Adventist logo"
-              className={compact ? "h-6 w-6 object-contain" : "h-10 w-10 object-contain"}
+              className={compact ? "h-5 w-5 object-contain" : "h-10 w-10 object-contain"}
             />
           </div>
 
