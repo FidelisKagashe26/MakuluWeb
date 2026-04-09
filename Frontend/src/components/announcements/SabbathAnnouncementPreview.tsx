@@ -105,8 +105,8 @@ export default function SabbathAnnouncementPreview({
   const nextWeekRows = document.nextWeekSabbathWorkers.filter((row) => row.role || row.chairperson);
   const deacons = document.deaconsOnDuty.filter(Boolean);
   const fellowshipRows = document.fellowship.filter((row) => row.name || row.fromChurch || row.toChurch);
-  const railWidth = compact ? 40 : 74;
-  const contentRightPadding = compact ? 44 : 78;
+  const railWidth = compact ? "40px" : "clamp(46px, 14vw, 74px)";
+  const contentRightPadding = compact ? "44px" : "clamp(50px, 15vw, 78px)";
   const shellClasses = compact
     ? "sabbath-preview-shell overflow-hidden rounded-2xl border border-white/10 bg-[#0a1438]/70 shadow-none"
     : "sabbath-preview-shell overflow-hidden rounded-[24px] border border-slate-200 bg-slate-100 shadow-[0_16px_38px_rgba(15,23,42,0.1)]";
@@ -128,10 +128,10 @@ export default function SabbathAnnouncementPreview({
           className={paperClasses}
           style={{ fontFamily: '"Times New Roman", Times, serif', lineHeight: 1.4 }}
         >
-          <div className="absolute inset-y-0 right-0 bg-[#c6d1eb]" style={{ width: `${railWidth}px` }} />
+          <div className="absolute inset-y-0 right-0 bg-[#c6d1eb]" style={{ width: railWidth }} />
           <div
             className="absolute right-0 top-0 flex justify-center bg-[#214d81]"
-            style={{ width: `${railWidth}px`, paddingTop: compact ? "3px" : "8px", paddingBottom: compact ? "3px" : "8px" }}
+            style={{ width: railWidth, paddingTop: compact ? "3px" : "8px", paddingBottom: compact ? "3px" : "8px" }}
           >
             <img
               src="/adventistLogo.png"
@@ -140,7 +140,7 @@ export default function SabbathAnnouncementPreview({
             />
           </div>
 
-          <div className="relative" style={{ paddingRight: `${contentRightPadding}px` }}>
+          <div className="relative" style={{ paddingRight: contentRightPadding }}>
             <header className={`text-center font-bold uppercase tracking-[0.02em] ${headerTextSize}`}>
               {headerLines.map((line) => (
                 <p key={line} className={compact ? "mb-0 leading-tight" : "mb-0.5"}>

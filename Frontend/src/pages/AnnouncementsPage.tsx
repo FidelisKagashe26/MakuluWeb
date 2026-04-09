@@ -90,6 +90,8 @@ export default function AnnouncementsPage() {
   const [activeType, setActiveType] = useState<AnnouncementType>("emergency");
   const [selectedId, setSelectedId] = useState<string>("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const mobileSidebarTop = "var(--navbar-height, 64px)";
+  const mobileSidebarHeight = "calc(100dvh - var(--navbar-height, 64px))";
 
   const { data, isLoading, error } = useApiQuery(
     () => fetchPublicAnnouncements({ page: 1, limit: 400 }),
@@ -225,7 +227,8 @@ export default function AnnouncementsPage() {
         {/* Mobile Overlay */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+            className="fixed inset-x-0 bottom-0 z-30 bg-black/50 lg:hidden"
+            style={{ top: mobileSidebarTop }}
             onClick={() => setSidebarOpen(false)}
           />
         )}
@@ -236,9 +239,10 @@ export default function AnnouncementsPage() {
           <aside
             className={`${
               sidebarOpen
-                ? "fixed inset-y-0 left-0 z-40 w-80 overflow-y-auto"
+                ? "fixed bottom-0 left-0 z-40 w-[19rem] max-w-[90vw] overflow-y-auto"
                 : "hidden lg:block"
-            } h-fit rounded-2xl border border-slate-200 bg-white/85 p-3 shadow-soft dark:border-white/10 dark:bg-slate-900/60 lg:sticky lg:top-28 lg:h-fit lg:w-auto lg:rounded-2xl`}
+            } h-full rounded-r-2xl border border-slate-200 bg-white p-3 shadow-soft dark:border-white/10 dark:bg-slate-900 lg:sticky lg:top-28 lg:h-fit lg:w-auto lg:rounded-2xl lg:bg-white/85 lg:dark:bg-slate-900/60`}
+            style={sidebarOpen ? { top: mobileSidebarTop, height: mobileSidebarHeight } : undefined}
           >
             <div className="flex items-center justify-between lg:block">
               <h3 className="px-2 text-sm font-semibold uppercase tracking-[0.14em] text-church-600 dark:text-church-300">
