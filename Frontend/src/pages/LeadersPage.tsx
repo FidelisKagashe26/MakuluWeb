@@ -125,7 +125,7 @@ export default function LeadersPage() {
                 className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft transition hover:-translate-y-1 dark:border-slate-700 dark:bg-slate-950"
               >
                 {leader.imageUrl && !failedImageIds[leader.id] ? (
-                  <div className="h-60 w-full bg-slate-100 dark:bg-slate-900 sm:h-64">
+                  <div className="w-full bg-slate-100 dark:bg-slate-900">
                     <img
                       src={leader.imageUrl}
                       alt={leader.name}
@@ -137,7 +137,7 @@ export default function LeadersPage() {
                           [leader.id]: true
                         }))
                       }
-                      className="h-full w-full object-contain object-center"
+                      className="block h-auto w-full"
                     />
                   </div>
                 ) : (
