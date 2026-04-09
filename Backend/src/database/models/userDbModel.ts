@@ -12,6 +12,8 @@ const userSchema = new Schema(
     failedAttempts: { type: Number, default: 0 },
     lockedUntil: { type: String, default: null },
     lastLoginAt: { type: String, default: null },
+    passwordResetTokenHash: { type: String, default: "" },
+    passwordResetExpiresAt: { type: String, default: "" },
     refreshTokenHashes: { type: [String], default: [] },
     createdAt: { type: String, required: true }
   },

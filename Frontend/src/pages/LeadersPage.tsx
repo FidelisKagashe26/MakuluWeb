@@ -53,28 +53,30 @@ export default function LeadersPage() {
     <>
       <Helmet>
         <title>Viongozi | DODOMA MAKULU SDA CHURCH</title>
-        <meta name="description" content="List ya viongozi wa kanisa pamoja na cheo na biography." />
+        <meta name="description" content="Orodha ya viongozi wa kanisa pamoja na majina na vyeo vyao." />
       </Helmet>
 
-      <section className="space-y-4">
-        <div className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-soft dark:border-slate-800 dark:bg-slate-900/80">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-church-700">Viongozi</p>
-          <h2 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">Viongozi wa Kanisa</h2>
-          <div className="mt-4">
-            <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-              Sorting (by role)
+      <section className="space-y-5">
+        <div className="pb-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-church-600 dark:text-church-300">
+              CHURCH LEADERS
+            </p>
+            <div className="w-full sm:w-64">
               <AppDropdown
-                className="mt-1"
+                className="w-full"
                 value={sortBy}
                 options={sortOptions}
                 onChange={(value) => setSortBy(value as SortOption)}
               />
-            </label>
+            </div>
           </div>
+          <h2 className="mt-3 text-2xl font-bold text-slate-900 dark:text-white">Viongozi wa Kanisa</h2>
+          <div className="mt-3 h-px w-full bg-slate-300/80 dark:bg-white/15" />
         </div>
 
         {isLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={`leader-loading-${index}`}
@@ -91,34 +93,37 @@ export default function LeadersPage() {
         ) : null}
 
         {!isLoading && sortedLeaders.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {sortedLeaders.map((leader: LeaderItem) => (
               <article
                 key={leader.id}
-                className="group rounded-2xl border border-slate-200 bg-white p-4 shadow-soft transition hover:-translate-y-1 dark:border-slate-700 dark:bg-slate-950"
+                className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft transition hover:-translate-y-1 dark:border-slate-700 dark:bg-slate-950"
               >
                 {leader.imageUrl && !failedImageIds[leader.id] ? (
-                  <img
-                    src={leader.imageUrl}
-                    alt={leader.name}
-                    loading="lazy"
-                    decoding="async"
-                    onError={() =>
-                      setFailedImageIds((previous) => ({
-                        ...previous,
-                        [leader.id]: true
-                      }))
-                    }
-                    className="h-56 w-full rounded-xl object-cover transition duration-300 group-hover:brightness-110"
-                  />
+                  <div className="h-56 w-full bg-slate-100 dark:bg-slate-900">
+                    <img
+                      src={leader.imageUrl}
+                      alt={leader.name}
+                      loading="lazy"
+                      decoding="async"
+                      onError={() =>
+                        setFailedImageIds((previous) => ({
+                          ...previous,
+                          [leader.id]: true
+                        }))
+                      }
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
                 ) : (
-                  <div className="flex h-56 w-full items-center justify-center rounded-xl bg-slate-200 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  <div className="flex h-56 w-full items-center justify-center bg-slate-200 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                     No image
                   </div>
                 )}
-                <h3 className="mt-4 text-lg font-bold text-slate-900 dark:text-white">{leader.name}</h3>
-                <p className="text-sm font-semibold text-church-700 dark:text-church-300">{leader.title}</p>
-                <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{leader.biography || "No data"}</p>
+                <div className="space-y-0.5 p-3">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">{leader.name}</h3>
+                  <p className="text-sm font-semibold text-church-700 dark:text-church-300">{leader.title}</p>
+                </div>
               </article>
             ))}
           </div>

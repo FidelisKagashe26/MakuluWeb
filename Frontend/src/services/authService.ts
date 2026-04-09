@@ -15,6 +15,22 @@ type AuthErrorPayload = {
   lockedUntil?: string;
 };
 
+function toAuthRequestError(
+  error: unknown,
+  fallbackMessage: string
+): AuthRequestError | unknown {
+  if (!axios.isAxiosError(error)) return error;
+
+  const payloadData = (error.response?.data || {}) as AuthErrorPayload;
+  const message = String(payloadData?.message || fallbackMessage);
+  return new AuthRequestError(message, {
+    statusCode: error.response?.status,
+    retryAfterSeconds: Number(payloadData?.retryAfterSeconds || 0),
+    remainingAttempts: Number(payloadData?.remainingAttempts || 0),
+    lockedUntil: payloadData?.lockedUntil
+  });
+}
+
 export class AuthRequestError extends Error {
   statusCode?: number;
   retryAfterSeconds?: number;
@@ -44,19 +60,28 @@ export async function loginRequest(payload: { email: string; password: string })
     const response = await api.post("/auth/login", payload);
     return response.data?.data as LoginResponse;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const payloadData = (error.response?.data || {}) as AuthErrorPayload;
-      const message = String(
-        payloadData?.message || "Login failed. Please try again."
-      );
-      throw new AuthRequestError(message, {
-        statusCode: error.response?.status,
-        retryAfterSeconds: Number(payloadData?.retryAfterSeconds || 0),
-        remainingAttempts: Number(payloadData?.remainingAttempts || 0),
-        lockedUntil: payloadData?.lockedUntil
-      });
-    }
-    throw error;
+    throw toAuthRequestError(error, "Login failed. Please try again.");
+  }
+}
+
+export async function requestPasswordReset(payload: { email: string }) {
+  try {
+    const response = await api.post("/auth/forgot-password", payload);
+    return String(response.data?.message || "Password reset email sent.");
+  } catch (error) {
+    throw toAuthRequestError(
+      error,
+      "Failed to process forgot password request. Please try again."
+    );
+  }
+}
+
+export async function resetPasswordRequest(payload: { token: string; newPassword: string }) {
+  try {
+    const response = await api.post("/auth/reset-password", payload);
+    return String(response.data?.message || "Password reset successful.");
+  } catch (error) {
+    throw toAuthRequestError(error, "Failed to reset password. Please try again.");
   }
 }
 

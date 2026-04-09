@@ -51,6 +51,8 @@ export async function createUser({
     failedAttempts: 0,
     lockedUntil: null,
     lastLoginAt: null,
+    passwordResetTokenHash: "",
+    passwordResetExpiresAt: "",
     refreshTokenHashes: [],
     createdAt: new Date().toISOString()
   };
@@ -155,5 +157,34 @@ export async function clearRefreshTokenHashes(user) {
       $set: { refreshTokenHashes: [] }
     }
   );
+}
+
+export async function setPasswordResetToken(userId, tokenHash, expiresAt) {
+  return updateUser(userId, {
+    passwordResetTokenHash: String(tokenHash || ""),
+    passwordResetExpiresAt: String(expiresAt || "")
+  });
+}
+
+export async function clearPasswordResetToken(userId) {
+  return updateUser(userId, {
+    passwordResetTokenHash: "",
+    passwordResetExpiresAt: ""
+  });
+}
+
+export async function findUserByPasswordResetTokenHash(tokenHash) {
+  const nowIso = new Date().toISOString();
+  const user = await UserDbModel.findOne({
+    passwordResetTokenHash: String(tokenHash || ""),
+    passwordResetExpiresAt: { $gt: nowIso }
+  }).lean();
+
+  if (!user) return null;
+
+  return {
+    ...user,
+    allowedSections: normalizeAllowedSections(user?.role, user?.allowedSections)
+  };
 }
 

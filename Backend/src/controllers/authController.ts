@@ -1,14 +1,19 @@
 import bcrypt from "bcryptjs";
+import { randomBytes } from "node:crypto";
 import type { Request, Response } from "express";
 import { env } from "../config/env.js";
 import {
   addRefreshTokenHash,
+  clearPasswordResetToken,
+  clearRefreshTokenHashes,
+  findUserByPasswordResetTokenHash,
   findUserByEmail,
   findUserById,
   isUserLocked,
   registerFailedAttempt,
   removeRefreshTokenHash,
   resetFailedAttempts,
+  setPasswordResetToken,
   updateUser
 } from "../models/userModel.js";
 import { getPermissionsForRole, normalizeAllowedSections } from "../services/rbacService.js";
@@ -20,6 +25,7 @@ import {
 } from "../services/tokenService.js";
 import { USER_STATUS } from "../utils/constants.js";
 import { addActivity } from "../services/activityService.js";
+import { sendPasswordResetEmail } from "../services/mailService.js";
 
 function toSafeUser(user: any) {
   return {
@@ -49,6 +55,21 @@ function setAuthCookies(res: Response, accessToken: string, refreshToken: string
     sameSite: isProd ? "none" : "lax",
     maxAge: sessionMs
   });
+}
+
+function buildPasswordResetUrl(token: string) {
+  const base = String(env.passwordResetUrlBase || "").trim();
+
+  try {
+    const url = new URL(base || `${env.frontendUrl}/admin/login`);
+    url.searchParams.set("mode", "reset");
+    url.searchParams.set("token", token);
+    return url.toString();
+  } catch {
+    const fallbackBase = base || `${env.frontendUrl || "http://localhost:5173"}/admin/login`;
+    const separator = fallbackBase.includes("?") ? "&" : "?";
+    return `${fallbackBase}${separator}mode=reset&token=${encodeURIComponent(token)}`;
+  }
 }
 
 export async function login(req: Request, res: Response) {
@@ -136,6 +157,102 @@ export async function login(req: Request, res: Response) {
         refreshToken
       }
     });
+  } catch {
+    return res.status(500).json({ ok: false, message: "Kuna hitilafu ya server." });
+  }
+}
+
+export async function forgotPassword(req: Request, res: Response) {
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  if (!email) {
+    return res.status(400).json({ ok: false, message: "Email inahitajika." });
+  }
+
+  try {
+    const user = await findUserByEmail(email);
+    if (user && user.status === USER_STATUS.ACTIVE) {
+      const rawToken = randomBytes(32).toString("hex");
+      const resetTokenHash = hashToken(rawToken);
+      const expiresAt = new Date(
+        Date.now() + env.passwordResetTokenExpiresMinutes * 60 * 1000
+      ).toISOString();
+
+      await setPasswordResetToken(user.id, resetTokenHash, expiresAt);
+
+      try {
+        await sendPasswordResetEmail({
+          toEmail: user.email,
+          fullName: user.fullName,
+          resetUrl: buildPasswordResetUrl(rawToken),
+          expiresMinutes: env.passwordResetTokenExpiresMinutes
+        });
+      } catch (mailError) {
+        await clearPasswordResetToken(user.id);
+        // eslint-disable-next-line no-console
+        console.error("Failed to send password reset email:", mailError);
+        return res.status(500).json({
+          ok: false,
+          message: "Imeshindikana kutuma email ya kurejesha password. Jaribu tena."
+        });
+      }
+    }
+
+    return res.json({
+      ok: true,
+      message: "Ikiwa email ipo, tumepeleka maelekezo ya kurejesha password."
+    });
+  } catch {
+    return res.status(500).json({ ok: false, message: "Kuna hitilafu ya server." });
+  }
+}
+
+export async function resetPassword(req: Request, res: Response) {
+  const token = String(req.body?.token || "").trim();
+  const newPassword = String(req.body?.newPassword || "");
+
+  if (!token || !newPassword) {
+    return res.status(400).json({ ok: false, message: "Token na password mpya vinahitajika." });
+  }
+
+  if (newPassword.length < 8) {
+    return res.status(400).json({
+      ok: false,
+      message: "Password mpya lazima iwe na angalau herufi 8."
+    });
+  }
+
+  try {
+    const resetTokenHash = hashToken(token);
+    const user = await findUserByPasswordResetTokenHash(resetTokenHash);
+    if (!user) {
+      return res.status(400).json({
+        ok: false,
+        message: "Token si sahihi au ime-expire. Omba link mpya."
+      });
+    }
+
+    const nextPasswordHash = await bcrypt.hash(newPassword, 10);
+    const updatedUser =
+      (await updateUser(user.id, {
+        passwordHash: nextPasswordHash,
+        failedAttempts: 0,
+        lockedUntil: null,
+        passwordResetTokenHash: "",
+        passwordResetExpiresAt: ""
+      })) || user;
+
+    await clearRefreshTokenHashes(updatedUser);
+
+    addActivity({
+      userId: updatedUser.id,
+      userName: updatedUser.fullName,
+      action: "RESET_PASSWORD",
+      entity: "AUTH",
+      entityId: updatedUser.id,
+      detail: "User reset password via email link"
+    });
+
+    return res.json({ ok: true, message: "Password imebadilishwa kikamilifu. Tafadhali ingia tena." });
   } catch {
     return res.status(500).json({ ok: false, message: "Kuna hitilafu ya server." });
   }
