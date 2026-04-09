@@ -226,22 +226,24 @@ export default function MissionSection() {
           </article>
         </div>
 
-        <article className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white/80 shadow-soft backdrop-blur-sm dark:border-white/20 dark:bg-white/[0.08] dark:shadow-[0_18px_45px_rgba(6,12,36,0.35)] dark:backdrop-blur-md">
+        <article className="mt-5 overflow-hidden rounded-2xl border border-[#4a558e]/80 bg-[#1c2557] shadow-[0_18px_45px_rgba(6,12,36,0.35)]">
           {mission.learnMoreImageUrl ? (
-            <img
-              src={mission.learnMoreImageUrl}
-              alt={mission.learnMoreImageAlt || "Jifunze zaidi"}
-              loading="lazy"
-              decoding="async"
-              className="w-full object-contain object-top"
-            />
+            <div className="bg-[#242f69]">
+              <img
+                src={mission.learnMoreImageUrl}
+                alt={mission.learnMoreImageAlt || "Jifunze zaidi"}
+                loading="lazy"
+                decoding="async"
+                className="w-full object-contain object-top"
+              />
+            </div>
           ) : (
-            <div className="flex min-h-[220px] items-center justify-center border-b border-dashed border-slate-300/60 text-sm text-slate-500 dark:border-white/20 dark:text-slate-300">
+            <div className="flex min-h-[220px] items-center justify-center border-b border-dashed border-white/25 bg-[#242f69] text-sm text-slate-200">
               {isLoading ? "Loading..." : "No data"}
             </div>
           )}
 
-          <div className="flex items-center justify-center border-t border-slate-200/80 p-4 dark:border-white/15">
+          <div className="flex items-center justify-center border-t border-white/20 bg-[#1a2352] p-4">
             {learnMoreHref ? (
               <a
                 href={learnMoreHref}
