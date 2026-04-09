@@ -16,6 +16,9 @@ type MissionSectionData = {
   scriptureCards: MissionCardData[];
   imageUrl: string;
   imageAlt: string;
+  learnMoreImageUrl: string;
+  learnMoreImageAlt: string;
+  learnMoreHref: string;
 };
 
 const emptyMissionSection: MissionSectionData = {
@@ -24,7 +27,10 @@ const emptyMissionSection: MissionSectionData = {
   statementQuote: "",
   scriptureCards: [],
   imageUrl: "",
-  imageAlt: ""
+  imageAlt: "",
+  learnMoreImageUrl: "",
+  learnMoreImageAlt: "",
+  learnMoreHref: ""
 };
 
 function normalizeMissionSection(input: unknown): MissionSectionData {
@@ -45,8 +51,17 @@ function normalizeMissionSection(input: unknown): MissionSectionData {
       content: String(item?.content ?? "")
     })),
     imageUrl: resolvePublicUploadUrl(typeof raw.imageUrl === "string" ? raw.imageUrl : ""),
-    imageAlt: typeof raw.imageAlt === "string" ? raw.imageAlt : ""
+    imageAlt: typeof raw.imageAlt === "string" ? raw.imageAlt : "",
+    learnMoreImageUrl: resolvePublicUploadUrl(
+      typeof raw.learnMoreImageUrl === "string" ? raw.learnMoreImageUrl : ""
+    ),
+    learnMoreImageAlt: typeof raw.learnMoreImageAlt === "string" ? raw.learnMoreImageAlt : "",
+    learnMoreHref: typeof raw.learnMoreHref === "string" ? raw.learnMoreHref : ""
   };
+}
+
+function isExternalHref(value: string) {
+  return /^https?:\/\//i.test(value.trim());
 }
 
 function AccordionToggleIcon({ isOpen }: { isOpen: boolean }) {
@@ -70,6 +85,8 @@ function AccordionToggleIcon({ isOpen }: { isOpen: boolean }) {
 export default function MissionSection() {
   const [mission, setMission] = useState<MissionSectionData>(emptyMissionSection);
   const [isLoading, setIsLoading] = useState(true);
+  const learnMoreHref = mission.learnMoreHref.trim();
+  const isExternalLearnMoreHref = isExternalHref(learnMoreHref);
   const visibleCards = useMemo(
     () => mission.scriptureCards.filter((card) => card.reference || card.content),
     [mission.scriptureCards]
@@ -190,22 +207,61 @@ export default function MissionSection() {
             )}
           </div>
 
-          <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white/80 p-3 shadow-soft backdrop-blur-sm dark:border-white/20 dark:bg-white/[0.08] dark:shadow-[0_18px_45px_rgba(6,12,36,0.35)] dark:backdrop-blur-md">
+          <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white/80 p-0 shadow-soft backdrop-blur-sm dark:border-white/20 dark:bg-white/[0.08] dark:shadow-[0_18px_45px_rgba(6,12,36,0.35)] dark:backdrop-blur-md">
             {mission.imageUrl ? (
-              <img
-                src={mission.imageUrl}
-                alt={mission.imageAlt || "Mission image"}
-                loading="lazy"
-                decoding="async"
-                className="h-full min-h-[260px] w-full rounded-xl object-cover"
-              />
+              <div className="flex min-h-[260px] w-full items-center justify-center bg-white/90 dark:bg-[#0a1438]/50 sm:min-h-[300px]">
+                <img
+                  src={mission.imageUrl}
+                  alt={mission.imageAlt || "Mission image"}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-contain object-center"
+                />
+              </div>
             ) : (
-              <div className="flex min-h-[260px] items-center justify-center rounded-xl border border-dashed border-slate-300/60 text-sm text-slate-500 dark:border-white/20 dark:text-slate-300">
+              <div className="flex min-h-[260px] items-center justify-center border border-dashed border-slate-300/60 text-sm text-slate-500 dark:border-white/20 dark:text-slate-300 sm:min-h-[300px]">
                 {isLoading ? "Loading..." : "No data"}
               </div>
             )}
           </article>
         </div>
+
+        <article className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white/80 shadow-soft backdrop-blur-sm dark:border-white/20 dark:bg-white/[0.08] dark:shadow-[0_18px_45px_rgba(6,12,36,0.35)] dark:backdrop-blur-md">
+          {mission.learnMoreImageUrl ? (
+            <img
+              src={mission.learnMoreImageUrl}
+              alt={mission.learnMoreImageAlt || "Jifunze zaidi"}
+              loading="lazy"
+              decoding="async"
+              className="w-full object-contain object-top"
+            />
+          ) : (
+            <div className="flex min-h-[220px] items-center justify-center border-b border-dashed border-slate-300/60 text-sm text-slate-500 dark:border-white/20 dark:text-slate-300">
+              {isLoading ? "Loading..." : "No data"}
+            </div>
+          )}
+
+          <div className="flex items-center justify-center border-t border-slate-200/80 p-4 dark:border-white/15">
+            {learnMoreHref ? (
+              <a
+                href={learnMoreHref}
+                className="admin-btn-primary inline-flex min-w-[180px] items-center justify-center px-5 py-2.5 text-sm font-semibold"
+                target={isExternalLearnMoreHref ? "_blank" : undefined}
+                rel={isExternalLearnMoreHref ? "noopener noreferrer" : undefined}
+              >
+                Jifunze zaidi
+              </a>
+            ) : (
+              <button
+                type="button"
+                className="admin-btn-primary min-w-[180px] cursor-not-allowed px-5 py-2.5 text-sm font-semibold opacity-60"
+                disabled
+              >
+                Jifunze zaidi
+              </button>
+            )}
+          </div>
+        </article>
       </div>
     </section>
   );

@@ -21,6 +21,8 @@ const sortOptions = [
 
 export default function LeadersPage() {
   const [sortBy, setSortBy] = useState<SortOption>("priority");
+  const [searchValue, setSearchValue] = useState("");
+  const [submittedSearch, setSubmittedSearch] = useState("");
   const [failedImageIds, setFailedImageIds] = useState<Record<string, boolean>>({});
   const { data, isLoading } = useApiQuery(
     () => fetchPublicLeaders({ page: 1, limit: 200, sort: "order" }),
@@ -32,7 +34,14 @@ export default function LeadersPage() {
   }, [data?.data]);
 
   const sortedLeaders = useMemo(() => {
-    const rows = [...(data?.data ?? [])];
+    const normalizedSearch = submittedSearch.trim().toLowerCase();
+    const rows = [...(data?.data ?? [])].filter((leader) => {
+      if (!normalizedSearch) return true;
+      return (
+        String(leader.name || "").toLowerCase().includes(normalizedSearch) ||
+        String(leader.title || "").toLowerCase().includes(normalizedSearch)
+      );
+    });
 
     if (sortBy === "priority") {
       return rows.sort((a, b) => {
@@ -47,7 +56,7 @@ export default function LeadersPage() {
     }
 
     return rows.sort((a, b) => b.title.localeCompare(a.title));
-  }, [data?.data, sortBy]);
+  }, [data?.data, sortBy, submittedSearch]);
 
   return (
     <>
@@ -60,7 +69,7 @@ export default function LeadersPage() {
         <div className="pb-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-church-600 dark:text-church-300">
-              CHURCH LEADERS
+              VIONGOZI WA KANISA
             </p>
             <div className="w-full sm:w-64">
               <AppDropdown
@@ -71,8 +80,24 @@ export default function LeadersPage() {
               />
             </div>
           </div>
-          <h2 className="mt-3 text-2xl font-bold text-slate-900 dark:text-white">Viongozi wa Kanisa</h2>
           <div className="mt-3 h-px w-full bg-slate-300/80 dark:bg-white/15" />
+          <form
+            className="mt-3 flex items-center justify-center gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              setSubmittedSearch(searchValue);
+            }}
+          >
+            <input
+              className="form-input w-full max-w-sm"
+              placeholder="Search leader..."
+              value={searchValue}
+              onChange={(event) => setSearchValue(event.target.value)}
+            />
+            <button type="submit" className="admin-btn-primary px-4 py-2">
+              Search
+            </button>
+          </form>
         </div>
 
         {isLoading ? (
@@ -100,7 +125,7 @@ export default function LeadersPage() {
                 className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft transition hover:-translate-y-1 dark:border-slate-700 dark:bg-slate-950"
               >
                 {leader.imageUrl && !failedImageIds[leader.id] ? (
-                  <div className="h-56 w-full bg-slate-100 dark:bg-slate-900">
+                  <div className="h-60 w-full bg-slate-100 dark:bg-slate-900 sm:h-64">
                     <img
                       src={leader.imageUrl}
                       alt={leader.name}
@@ -112,17 +137,18 @@ export default function LeadersPage() {
                           [leader.id]: true
                         }))
                       }
-                      className="h-full w-full object-contain"
+                      className="h-full w-full object-contain object-center"
                     />
                   </div>
                 ) : (
-                  <div className="flex h-56 w-full items-center justify-center bg-slate-200 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  <div className="flex h-60 w-full items-center justify-center bg-slate-200 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300 sm:h-64">
                     No image
                   </div>
                 )}
-                <div className="space-y-0.5 p-3">
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">{leader.name}</h3>
+                <div className="p-3 text-center">
                   <p className="text-sm font-semibold text-church-700 dark:text-church-300">{leader.title}</p>
+                  <div className="mx-auto mt-1 h-px w-16 bg-slate-300/90 dark:bg-white/20" />
+                  <h3 className="mt-2 text-lg font-bold text-slate-900 dark:text-white">{leader.name}</h3>
                 </div>
               </article>
             ))}

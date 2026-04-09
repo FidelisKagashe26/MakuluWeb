@@ -75,7 +75,10 @@ export const defaultSiteSettings = {
     ],
     imageUrl:
       "https://images.unsplash.com/photo-1466442929976-97f336a657be?auto=format&fit=crop&w=1200&q=85",
-    imageAlt: "Mission illustration"
+    imageAlt: "Mission illustration",
+    learnMoreImageUrl: "",
+    learnMoreImageAlt: "Learn more mission image",
+    learnMoreHref: ""
   },
   mapLocation: {
     latitude: -6.163,

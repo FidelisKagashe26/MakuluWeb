@@ -67,6 +67,9 @@ type MissionSectionForm = {
   statementQuote: string;
   imageUrl: string;
   imageAlt: string;
+  learnMoreImageUrl: string;
+  learnMoreImageAlt: string;
+  learnMoreHref: string;
   scriptureCards: MissionCardForm[];
 };
 
@@ -179,6 +182,9 @@ const defaultMissionSection: MissionSectionForm = {
   imageUrl:
     "https://images.unsplash.com/photo-1466442929976-97f336a657be?auto=format&fit=crop&w=1200&q=85",
   imageAlt: "Mission illustration",
+  learnMoreImageUrl: "",
+  learnMoreImageAlt: "Learn more mission image",
+  learnMoreHref: "",
   scriptureCards: defaultMissionCards
 };
 
@@ -245,6 +251,9 @@ function normalizeMissionSection(input: unknown): MissionSectionForm {
     statementQuote: String(raw.statementQuote ?? ""),
     imageUrl: resolvePublicUploadUrl(String(raw.imageUrl ?? "")),
     imageAlt: String(raw.imageAlt ?? ""),
+    learnMoreImageUrl: resolvePublicUploadUrl(String(raw.learnMoreImageUrl ?? "")),
+    learnMoreImageAlt: String(raw.learnMoreImageAlt ?? ""),
+    learnMoreHref: String(raw.learnMoreHref ?? ""),
     scriptureCards: cards
   };
 }
@@ -331,6 +340,8 @@ export default function AdminSiteSettingsPage({ forcedTab }: AdminSiteSettingsPa
   const [missionSection, setMissionSection] = useState<MissionSectionForm>(defaultMissionSection);
   const [missionPendingImageFile, setMissionPendingImageFile] = useState<File | null>(null);
   const [missionPendingImagePreview, setMissionPendingImagePreview] = useState("");
+  const [missionLearnMorePendingImageFile, setMissionLearnMorePendingImageFile] = useState<File | null>(null);
+  const [missionLearnMorePendingImagePreview, setMissionLearnMorePendingImagePreview] = useState("");
   const [isUploadingMissionImage, setIsUploadingMissionImage] = useState(false);
   const [aboutPendingImageFile, setAboutPendingImageFile] = useState<File | null>(null);
   const [aboutPendingImagePreview, setAboutPendingImagePreview] = useState("");
@@ -399,6 +410,14 @@ export default function AdminSiteSettingsPage({ forcedTab }: AdminSiteSettingsPa
       }
     };
   }, [missionPendingImagePreview]);
+
+  useEffect(() => {
+    return () => {
+      if (missionLearnMorePendingImagePreview.startsWith("blob:")) {
+        URL.revokeObjectURL(missionLearnMorePendingImagePreview);
+      }
+    };
+  }, [missionLearnMorePendingImagePreview]);
 
   useEffect(() => {
     return () => {
@@ -478,6 +497,12 @@ export default function AdminSiteSettingsPage({ forcedTab }: AdminSiteSettingsPa
       URL.revokeObjectURL(missionPendingImagePreview);
     }
     setMissionPendingImagePreview("");
+
+    setMissionLearnMorePendingImageFile(null);
+    if (missionLearnMorePendingImagePreview.startsWith("blob:")) {
+      URL.revokeObjectURL(missionLearnMorePendingImagePreview);
+    }
+    setMissionLearnMorePendingImagePreview("");
   };
 
   const openAddSlide = () => {
@@ -524,6 +549,20 @@ export default function AdminSiteSettingsPage({ forcedTab }: AdminSiteSettingsPa
     setMissionPendingImageFile(file);
     setMissionPendingImagePreview(URL.createObjectURL(file));
     toast.success("Mission image selected. Click Save Mission Section to publish.");
+    event.target.value = "";
+  };
+
+  const handleMissionLearnMoreImageUpload = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (missionLearnMorePendingImagePreview.startsWith("blob:")) {
+      URL.revokeObjectURL(missionLearnMorePendingImagePreview);
+    }
+
+    setMissionLearnMorePendingImageFile(file);
+    setMissionLearnMorePendingImagePreview(URL.createObjectURL(file));
+    toast.success("Learn more image selected. Click Save Mission Section to publish.");
     event.target.value = "";
   };
 
@@ -892,6 +931,7 @@ export default function AdminSiteSettingsPage({ forcedTab }: AdminSiteSettingsPa
     try {
       setSavingSection("mission");
       let nextImageUrl = missionSection.imageUrl.trim();
+      let nextLearnMoreImageUrl = missionSection.learnMoreImageUrl.trim();
 
       if (missionPendingImageFile) {
         try {
@@ -907,6 +947,20 @@ export default function AdminSiteSettingsPage({ forcedTab }: AdminSiteSettingsPa
         }
       }
 
+      if (missionLearnMorePendingImageFile) {
+        try {
+          setIsUploadingMissionImage(true);
+          const uploadedUrl = await uploadSiteImage(missionLearnMorePendingImageFile);
+          if (!uploadedUrl) throw new Error("No image path returned.");
+          nextLearnMoreImageUrl = uploadedUrl;
+        } catch {
+          toast.error("Failed to upload learn more image.");
+          return;
+        } finally {
+          setIsUploadingMissionImage(false);
+        }
+      }
+
       const updated = await updateSiteSettings({
         missionSection: {
           sectionTitle: missionSection.sectionTitle.trim(),
@@ -914,6 +968,9 @@ export default function AdminSiteSettingsPage({ forcedTab }: AdminSiteSettingsPa
           statementQuote: missionSection.statementQuote.trim(),
           imageUrl: nextImageUrl,
           imageAlt: missionSection.imageAlt.trim(),
+          learnMoreImageUrl: nextLearnMoreImageUrl,
+          learnMoreImageAlt: missionSection.learnMoreImageAlt.trim(),
+          learnMoreHref: missionSection.learnMoreHref.trim(),
           scriptureCards: missionSection.scriptureCards.map((card, index) => ({
             id: card.id || `mission-card-${index + 1}`,
             reference: card.reference.trim(),
@@ -1364,11 +1421,28 @@ export default function AdminSiteSettingsPage({ forcedTab }: AdminSiteSettingsPa
             />
           </label>
           <label className="grid gap-1 text-sm font-semibold">
-            Image URL (optional)
+            Mission Image URL (optional)
             <input
               className="form-input"
               value={missionSection.imageUrl}
               onChange={(e) => handleMissionInput("imageUrl", e.target.value)}
+            />
+          </label>
+          <label className="grid gap-1 text-sm font-semibold">
+            Learn More Image URL (optional)
+            <input
+              className="form-input"
+              value={missionSection.learnMoreImageUrl}
+              onChange={(e) => handleMissionInput("learnMoreImageUrl", e.target.value)}
+            />
+          </label>
+          <label className="grid gap-1 text-sm font-semibold">
+            Learn More Link (button href)
+            <input
+              className="form-input"
+              value={missionSection.learnMoreHref}
+              onChange={(e) => handleMissionInput("learnMoreHref", e.target.value)}
+              placeholder="https://..."
             />
           </label>
           <label className="grid gap-1 text-sm font-semibold md:col-span-2">
@@ -1390,20 +1464,61 @@ export default function AdminSiteSettingsPage({ forcedTab }: AdminSiteSettingsPa
                     : "Pakia picha ya mission section hapa."}
             </span>
           </label>
+          <label className="grid gap-1 text-sm font-semibold md:col-span-2">
+            Learn More Image Upload
+            <input
+              className="form-input"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              onChange={(event) => handleMissionLearnMoreImageUpload(event)}
+              disabled={isUploadingMissionImage}
+            />
+            <span className="text-xs text-slate-300">
+              {isUploadingMissionImage
+                ? "Uploading image..."
+                : missionLearnMorePendingImageFile
+                  ? "Image selected. Click Save Mission Section to publish."
+                  : missionSection.learnMoreImageUrl
+                    ? "Current learn more image loaded."
+                    : "Pakia picha ndefu ya Learn More hapa."}
+            </span>
+          </label>
         </div>
 
-        {(missionPendingImagePreview || missionSection.imageUrl) ? (
-          <div className="mt-3">
-            <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
-              Mission Image Preview
-            </p>
-            <div className="overflow-hidden rounded-md border border-white/20 bg-slate-900/50">
-              <img
-                src={missionPendingImagePreview || missionSection.imageUrl}
-                alt="Mission preview"
-                className="h-44 w-full object-cover md:h-56"
-              />
-            </div>
+        {(missionPendingImagePreview ||
+          missionSection.imageUrl ||
+          missionLearnMorePendingImagePreview ||
+          missionSection.learnMoreImageUrl) ? (
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            {(missionPendingImagePreview || missionSection.imageUrl) ? (
+              <div>
+                <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
+                  Mission Image Preview
+                </p>
+                <div className="overflow-hidden rounded-md border border-white/20 bg-slate-900/50">
+                  <img
+                    src={missionPendingImagePreview || missionSection.imageUrl}
+                    alt="Mission preview"
+                    className="h-44 w-full object-contain md:h-56"
+                  />
+                </div>
+              </div>
+            ) : null}
+
+            {(missionLearnMorePendingImagePreview || missionSection.learnMoreImageUrl) ? (
+              <div>
+                <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
+                  Learn More Image Preview
+                </p>
+                <div className="overflow-hidden rounded-md border border-white/20 bg-slate-900/50">
+                  <img
+                    src={missionLearnMorePendingImagePreview || missionSection.learnMoreImageUrl}
+                    alt="Learn more preview"
+                    className="w-full object-contain object-top"
+                  />
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : null}
 
@@ -1427,11 +1542,19 @@ export default function AdminSiteSettingsPage({ forcedTab }: AdminSiteSettingsPa
             />
           </label>
           <label className="grid gap-1 text-sm font-semibold md:col-span-2">
-            Image Alt Text
+            Mission Image Alt Text
             <input
               className="form-input"
               value={missionSection.imageAlt}
               onChange={(e) => handleMissionInput("imageAlt", e.target.value)}
+            />
+          </label>
+          <label className="grid gap-1 text-sm font-semibold md:col-span-2">
+            Learn More Image Alt Text
+            <input
+              className="form-input"
+              value={missionSection.learnMoreImageAlt}
+              onChange={(e) => handleMissionInput("learnMoreImageAlt", e.target.value)}
             />
           </label>
         </div>

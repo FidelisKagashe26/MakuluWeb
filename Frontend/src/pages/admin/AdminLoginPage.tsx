@@ -90,7 +90,7 @@ export default function AdminLoginPage() {
         }
 
         if (err.remainingAttempts && err.remainingAttempts > 0) {
-          message = `${message} Baki na jaribio ${err.remainingAttempts}.`;
+          message = `${message} Remaining attempts: ${err.remainingAttempts}.`;
         }
       }
 
@@ -274,7 +274,7 @@ export default function AdminLoginPage() {
                   </button>
                   {isLockedOut ? (
                     <p className="text-right text-xs font-semibold text-amber-500 dark:text-amber-300">
-                      Jaribu tena baada ya {lockoutMinutes}:{String(lockoutRemainSeconds).padStart(2, "0")}
+                      Try again in {lockoutMinutes}:{String(lockoutRemainSeconds).padStart(2, "0")}
                     </p>
                   ) : null}
                 </div>
@@ -302,9 +302,7 @@ export default function AdminLoginPage() {
                   void onForgotPassword();
                 }}
               >
-                <p className="text-sm text-slate-600 dark:text-slate-300">
-                  Enter your account email. Tutakutumia link ya kubadili password.
-                </p>
+                <p className="text-center text-sm text-slate-600 dark:text-slate-300">Enter your account email</p>
                 <label className="grid gap-1 text-sm font-semibold text-slate-700 dark:text-slate-200">
                   Email
                   <input
@@ -317,7 +315,7 @@ export default function AdminLoginPage() {
                     disabled={isRequestingReset}
                   />
                 </label>
-                <div className="mt-2 flex flex-wrap gap-2">
+                <div className="mt-2 flex flex-nowrap items-center justify-center gap-2">
                   <button
                     className="admin-btn-primary"
                     type="submit"
@@ -346,8 +344,8 @@ export default function AdminLoginPage() {
                   void onResetPassword();
                 }}
               >
-                <p className="text-sm text-slate-600 dark:text-slate-300">
-                  Weka password mpya ya akaunti yako.
+                <p className="text-center text-sm text-slate-600 dark:text-slate-300">
+                  Set your new account password
                 </p>
                 <label className="grid gap-1 text-sm font-semibold text-slate-700 dark:text-slate-200">
                   New Password
@@ -393,7 +391,7 @@ export default function AdminLoginPage() {
                   </div>
                 </label>
 
-                <div className="mt-2 flex flex-wrap gap-2">
+                <div className="mt-2 flex flex-nowrap items-center justify-center gap-2">
                   <button
                     className="admin-btn-primary"
                     type="submit"

@@ -78,16 +78,16 @@ export async function login(req: Request, res: Response) {
     const password = String(req.body?.password || "");
 
     if (!email || !password) {
-      return res.status(400).json({ ok: false, message: "Email na password vinahitajika." });
+      return res.status(400).json({ ok: false, message: "Email and password are required." });
     }
 
     const user = await findUserByEmail(email);
     if (!user) {
-      return res.status(401).json({ ok: false, message: "Taarifa za kuingia si sahihi." });
+      return res.status(401).json({ ok: false, message: "Invalid login credentials." });
     }
 
     if (user.status !== USER_STATUS.ACTIVE) {
-      return res.status(403).json({ ok: false, message: "Akaunti imezimwa." });
+      return res.status(403).json({ ok: false, message: "Account is disabled." });
     }
 
     if (isUserLocked(user)) {
@@ -96,7 +96,7 @@ export async function login(req: Request, res: Response) {
       const remainingSeconds = Math.ceil(remainingMs / 1000);
       return res.status(423).json({
         ok: false,
-        message: "Akaunti imefungwa kwa muda baada ya majaribio mengi.",
+        message: "Account is temporarily locked due to too many attempts.",
         lockedUntil: user.lockedUntil,
         retryAfterSeconds: remainingSeconds
       });
@@ -115,7 +115,7 @@ export async function login(req: Request, res: Response) {
 
         return res.status(423).json({
           ok: false,
-          message: `Majaribio ${env.maxLoginAttempts} yameshindwa. Subiri dakika ${env.lockMinutes} kabla ya kujaribu tena.`,
+          message: `Too many failed attempts (${env.maxLoginAttempts}). Please wait ${env.lockMinutes} minutes before retrying.`,
           remainingAttempts: 0,
           lockedUntil,
           retryAfterSeconds: remainingSeconds
@@ -124,7 +124,7 @@ export async function login(req: Request, res: Response) {
 
       return res.status(401).json({
         ok: false,
-        message: "Taarifa za kuingia si sahihi.",
+        message: "Invalid login credentials.",
         remainingAttempts: Math.max(env.maxLoginAttempts - failedAttempts, 0)
       });
     }
@@ -150,7 +150,7 @@ export async function login(req: Request, res: Response) {
 
     return res.json({
       ok: true,
-      message: "Umeingia kikamilifu.",
+      message: "Logged in successfully.",
       data: {
         user: toSafeUser(userAfterLogin),
         accessToken,
@@ -158,14 +158,14 @@ export async function login(req: Request, res: Response) {
       }
     });
   } catch {
-    return res.status(500).json({ ok: false, message: "Kuna hitilafu ya server." });
+    return res.status(500).json({ ok: false, message: "Server error." });
   }
 }
 
 export async function forgotPassword(req: Request, res: Response) {
   const email = String(req.body?.email || "").trim().toLowerCase();
   if (!email) {
-    return res.status(400).json({ ok: false, message: "Email inahitajika." });
+    return res.status(400).json({ ok: false, message: "Email is required." });
   }
 
   try {
@@ -192,17 +192,17 @@ export async function forgotPassword(req: Request, res: Response) {
         console.error("Failed to send password reset email:", mailError);
         return res.status(500).json({
           ok: false,
-          message: "Imeshindikana kutuma email ya kurejesha password. Jaribu tena."
+          message: "Failed to send password reset email. Please try again."
         });
       }
     }
 
     return res.json({
       ok: true,
-      message: "Ikiwa email ipo, tumepeleka maelekezo ya kurejesha password."
+      message: "If the email exists, reset instructions have been sent."
     });
   } catch {
-    return res.status(500).json({ ok: false, message: "Kuna hitilafu ya server." });
+    return res.status(500).json({ ok: false, message: "Server error." });
   }
 }
 
@@ -211,13 +211,13 @@ export async function resetPassword(req: Request, res: Response) {
   const newPassword = String(req.body?.newPassword || "");
 
   if (!token || !newPassword) {
-    return res.status(400).json({ ok: false, message: "Token na password mpya vinahitajika." });
+    return res.status(400).json({ ok: false, message: "Token and new password are required." });
   }
 
   if (newPassword.length < 8) {
     return res.status(400).json({
       ok: false,
-      message: "Password mpya lazima iwe na angalau herufi 8."
+      message: "New password must be at least 8 characters."
     });
   }
 
@@ -227,7 +227,7 @@ export async function resetPassword(req: Request, res: Response) {
     if (!user) {
       return res.status(400).json({
         ok: false,
-        message: "Token si sahihi au ime-expire. Omba link mpya."
+        message: "Token is invalid or expired. Request a new reset link."
       });
     }
 
@@ -252,16 +252,16 @@ export async function resetPassword(req: Request, res: Response) {
       detail: "User reset password via email link"
     });
 
-    return res.json({ ok: true, message: "Password imebadilishwa kikamilifu. Tafadhali ingia tena." });
+    return res.json({ ok: true, message: "Password reset successfully. Please sign in again." });
   } catch {
-    return res.status(500).json({ ok: false, message: "Kuna hitilafu ya server." });
+    return res.status(500).json({ ok: false, message: "Server error." });
   }
 }
 
 export async function refreshToken(req: Request, res: Response) {
   const token = String(req.body?.refreshToken || req.cookies?.refreshToken || "");
   if (!token) {
-    return res.status(401).json({ ok: false, message: "Refresh token haijatumwa." });
+    return res.status(401).json({ ok: false, message: "Refresh token is required." });
   }
 
   try {
@@ -269,12 +269,12 @@ export async function refreshToken(req: Request, res: Response) {
     const user = await findUserById(decoded.sub);
 
     if (!user || user.status !== USER_STATUS.ACTIVE) {
-      return res.status(401).json({ ok: false, message: "Mtumiaji si halali." });
+      return res.status(401).json({ ok: false, message: "User is not valid." });
     }
 
     const tokenHash = hashToken(token);
     if (!user.refreshTokenHashes.includes(tokenHash)) {
-      return res.status(401).json({ ok: false, message: "Refresh token haipo au imeondolewa." });
+      return res.status(401).json({ ok: false, message: "Refresh token is missing or revoked." });
     }
 
     await removeRefreshTokenHash(user, tokenHash);
@@ -293,7 +293,7 @@ export async function refreshToken(req: Request, res: Response) {
       }
     });
   } catch {
-    return res.status(401).json({ ok: false, message: "Refresh token si sahihi au ime-expire." });
+    return res.status(401).json({ ok: false, message: "Refresh token is invalid or expired." });
   }
 }
 
@@ -314,23 +314,23 @@ export async function logout(req: Request, res: Response) {
 
   res.clearCookie("accessToken");
   res.clearCookie("refreshToken");
-  return res.json({ ok: true, message: "Umetoka kikamilifu." });
+  return res.json({ ok: true, message: "Logged out successfully." });
 }
 
 export async function me(req: Request, res: Response) {
   const authId = req.auth?.id;
   if (!authId) {
-    return res.status(401).json({ ok: false, message: "Hujaingia." });
+    return res.status(401).json({ ok: false, message: "Not authenticated." });
   }
 
   try {
     const user = await findUserById(authId);
     if (!user) {
-      return res.status(401).json({ ok: false, message: "Mtumiaji hayupo." });
+      return res.status(401).json({ ok: false, message: "User not found." });
     }
 
     return res.json({ ok: true, data: toSafeUser(user) });
   } catch {
-    return res.status(500).json({ ok: false, message: "Kuna hitilafu ya server." });
+    return res.status(500).json({ ok: false, message: "Server error." });
   }
 }

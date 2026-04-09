@@ -60,7 +60,10 @@ const siteSettingsSchema = new Schema(
       statementQuote: { type: String, default: "" },
       scriptureCards: { type: [scriptureCardSchema], default: [] },
       imageUrl: { type: String, default: "" },
-      imageAlt: { type: String, default: "" }
+      imageAlt: { type: String, default: "" },
+      learnMoreImageUrl: { type: String, default: "" },
+      learnMoreImageAlt: { type: String, default: "" },
+      learnMoreHref: { type: String, default: "" }
     },
     mapLocation: {
       latitude: { type: Number, default: null },

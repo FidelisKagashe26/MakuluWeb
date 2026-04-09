@@ -13,5 +13,5 @@ export const authLimiter = rateLimit({
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { ok: false, message: "Majaribio mengi ya login, subiri kidogo." }
+  message: { ok: false, message: "Too many login attempts. Please wait and try again." }
 });

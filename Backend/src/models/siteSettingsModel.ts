@@ -55,6 +55,9 @@ function normalizeMissionSection(input: unknown): any {
     statementQuote: String(section.statementQuote || "").trim(),
     imageUrl: normalizeUploadPath(section.imageUrl),
     imageAlt: String(section.imageAlt || "").trim(),
+    learnMoreImageUrl: normalizeUploadPath(section.learnMoreImageUrl),
+    learnMoreImageAlt: String(section.learnMoreImageAlt || "").trim(),
+    learnMoreHref: String(section.learnMoreHref || "").trim(),
     scriptureCards
   };
 }
@@ -176,6 +179,15 @@ export async function updateSiteSettings(payload) {
       ),
       imageAlt: String(
         payload?.missionSection?.imageAlt ?? current.missionSection?.imageAlt ?? ""
+      ).trim(),
+      learnMoreImageUrl: normalizeUploadPath(
+        payload?.missionSection?.learnMoreImageUrl ?? current.missionSection?.learnMoreImageUrl ?? ""
+      ),
+      learnMoreImageAlt: String(
+        payload?.missionSection?.learnMoreImageAlt ?? current.missionSection?.learnMoreImageAlt ?? ""
+      ).trim(),
+      learnMoreHref: String(
+        payload?.missionSection?.learnMoreHref ?? current.missionSection?.learnMoreHref ?? ""
       ).trim(),
       scriptureCards: hasMissionCards
         ? payload.missionSection.scriptureCards
