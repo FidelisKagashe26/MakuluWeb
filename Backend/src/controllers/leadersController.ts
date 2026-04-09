@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { clearApiCache } from "../middleware/cacheMiddleware.js";
 import {
   createLeader,
   deleteLeader,
@@ -34,6 +35,7 @@ export async function createLeaderHandler(req: Request, res: Response) {
 
   try {
     const created = await createLeader({ name, title, biography, imageUrl, order });
+    clearApiCache();
     return res.status(201).json({ ok: true, data: created });
   } catch {
     return res.status(500).json({ ok: false, message: "Kuna hitilafu ya server." });
@@ -46,6 +48,7 @@ export async function updateLeaderHandler(req: Request, res: Response) {
     if (!updated) {
       return res.status(404).json({ ok: false, message: "Kiongozi hajapatikana." });
     }
+    clearApiCache();
     return res.json({ ok: true, data: updated });
   } catch {
     return res.status(500).json({ ok: false, message: "Kuna hitilafu ya server." });
@@ -58,6 +61,7 @@ export async function deleteLeaderHandler(req: Request, res: Response) {
     if (!success) {
       return res.status(404).json({ ok: false, message: "Kiongozi hajapatikana." });
     }
+    clearApiCache();
     return res.json({ ok: true, message: "Kiongozi amefutwa." });
   } catch {
     return res.status(500).json({ ok: false, message: "Kuna hitilafu ya server." });

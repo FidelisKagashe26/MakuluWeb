@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import AppDropdown from "@/components/common/AppDropdown";
 import { useApiQuery } from "@/hooks/useApiQuery";
@@ -21,10 +21,15 @@ const sortOptions = [
 
 export default function LeadersPage() {
   const [sortBy, setSortBy] = useState<SortOption>("priority");
+  const [failedImageIds, setFailedImageIds] = useState<Record<string, boolean>>({});
   const { data, isLoading } = useApiQuery(
     () => fetchPublicLeaders({ page: 1, limit: 200, sort: "order" }),
     []
   );
+
+  useEffect(() => {
+    setFailedImageIds({});
+  }, [data?.data]);
 
   const sortedLeaders = useMemo(() => {
     const rows = [...(data?.data ?? [])];
@@ -92,12 +97,18 @@ export default function LeadersPage() {
                 key={leader.id}
                 className="group rounded-2xl border border-slate-200 bg-white p-4 shadow-soft transition hover:-translate-y-1 dark:border-slate-700 dark:bg-slate-950"
               >
-                {leader.imageUrl ? (
+                {leader.imageUrl && !failedImageIds[leader.id] ? (
                   <img
                     src={leader.imageUrl}
                     alt={leader.name}
                     loading="lazy"
                     decoding="async"
+                    onError={() =>
+                      setFailedImageIds((previous) => ({
+                        ...previous,
+                        [leader.id]: true
+                      }))
+                    }
                     className="h-56 w-full rounded-xl object-cover transition duration-300 group-hover:brightness-110"
                   />
                 ) : (
