@@ -43,6 +43,12 @@ import {
   updateAnnouncementHandler
 } from "../controllers/announcementsController.js";
 import {
+  createEventHandler,
+  deleteEventHandler,
+  getEvents,
+  updateEventHandler
+} from "../controllers/eventsController.js";
+import {
   createMediaHandler,
   deleteMediaHandler,
   getMedia,
@@ -197,6 +203,11 @@ router.delete(
   requireSection(ADMIN_SECTIONS.ANNOUNCEMENTS, PERMISSIONS.DELETE),
   deleteAnnouncementHandler
 );
+
+router.get("/events", requireSection(ADMIN_SECTIONS.ANNOUNCEMENTS, PERMISSIONS.VIEW), getEvents);
+router.post("/events", requireSection(ADMIN_SECTIONS.ANNOUNCEMENTS, PERMISSIONS.CREATE), createEventHandler);
+router.put("/events/:eventId", requireSection(ADMIN_SECTIONS.ANNOUNCEMENTS, PERMISSIONS.UPDATE), updateEventHandler);
+router.delete("/events/:eventId", requireSection(ADMIN_SECTIONS.ANNOUNCEMENTS, PERMISSIONS.DELETE), deleteEventHandler);
 
 router.get("/media", requireSection(ADMIN_SECTIONS.MEDIA, PERMISSIONS.VIEW), getMedia);
 router.post("/media", requireSection(ADMIN_SECTIONS.MEDIA, PERMISSIONS.CREATE), createMediaHandler);

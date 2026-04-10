@@ -4,12 +4,15 @@ import { motion } from "framer-motion";
 import { api } from "@/lib/api";
 import { resolvePublicUploadUrl } from "@/services/adminService";
 
-type AnnouncementApi = {
+type EventApi = {
   id: string;
   title: string;
+  summary: string;
   content: string;
+  imageUrl: string;
+  location: string;
   startDate: string;
-  endDate: string;
+  status: "draft" | "upcoming" | "ongoing" | "past";
 };
 
 type ReportApi = {
@@ -43,7 +46,7 @@ type ApiResponse<T> = {
 
 type RecentMixedItem = {
   id: string;
-  kind: "announcement" | "report" | "group";
+  kind: "event" | "report" | "group";
   badge: string;
   title: string;
   excerpt: string;
@@ -82,20 +85,22 @@ export default function RecentHighlightsSection() {
 
     const load = async () => {
       try {
-        const [announcementsRes, reportsRes, groupsRes] = await Promise.all([
-          api.get<ApiResponse<AnnouncementApi[]>>("/public/announcements/active"),
+        const [eventsRes, reportsRes, groupsRes] = await Promise.all([
+          api.get<ApiResponse<EventApi[]>>("/public/events", { params: { page: 1, limit: 50 } }),
           api.get<ApiResponse<ReportApi[]>>("/public/reports"),
           api.get<ApiResponse<GroupApi[]>>("/public/groups")
         ]);
 
-        const announcementItems: RecentMixedItem[] = (announcementsRes.data?.data || []).map((item) => ({
-          id: `ann-${item.id}`,
-          kind: "announcement",
-          badge: "Matukio",
+        const eventItems: RecentMixedItem[] = (eventsRes.data?.data || [])
+          .filter((item) => item.status === "ongoing" || item.status === "upcoming")
+          .map((item) => ({
+          id: `evt-${item.id}`,
+          kind: "event",
+          badge: item.status === "ongoing" ? "Tukio Live" : "Tukio Lijalo",
           title: item.title,
-          excerpt: truncateText(item.content, 135),
+          excerpt: truncateText(item.summary || item.content, 135),
           date: item.startDate || null,
-          imageUrl: "",
+          imageUrl: resolvePublicUploadUrl(item.imageUrl || ""),
           href: "/matukio"
         }));
 
@@ -121,7 +126,7 @@ export default function RecentHighlightsSection() {
           href: "/vikundi"
         }));
 
-        const mixed = sortByDateDesc([...announcementItems, ...reportItems, ...groupItems]);
+        const mixed = sortByDateDesc([...eventItems, ...reportItems, ...groupItems]);
 
         if (!cancelled) {
           setItems(mixed);

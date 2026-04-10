@@ -17,8 +17,8 @@ export const adminSectionOptions: AdminSectionOption[] = [
   { key: "media", label: "Media", description: "Usimamizi wa picha na video." },
   {
     key: "announcements",
-    label: "Matukio",
-    description: "Usimamizi wa matukio ya kanisa (yajayo, yanayoendelea, na yaliyopita)."
+    label: "Announcements",
+    description: "Usimamizi wa matangazo ya kanisa."
   },
   { key: "users", label: "Users", description: "Usimamizi wa watumiaji na ruhusa." },
   { key: "account", label: "My Account", description: "Akaunti ya mtumiaji na nenosiri." }

@@ -74,14 +74,14 @@ function PreviewTable({
 
 function getPreviewTitle(type: AnnouncementType, announcementDate: string) {
   if (type === "emergency") {
-    return announcementDate ? `Matukio ya Dharura ya tarehe ${announcementDate}` : "Matukio ya Dharura";
+    return announcementDate ? `Matangazo ya Dharura ya tarehe ${announcementDate}` : "Matangazo ya Dharura";
   }
 
   if (type === "ongoing") {
-    return announcementDate ? `Matukio ya Kawaida ya tarehe ${announcementDate}` : "Matukio ya Kawaida";
+    return announcementDate ? `Matangazo Endelevu ya tarehe ${announcementDate}` : "Matangazo Endelevu";
   }
 
-  return announcementDate ? `Matukio ya Sabato ya tarehe ${announcementDate}` : "Matukio ya Sabato";
+  return announcementDate ? `Matangazo ya Sabato ya tarehe ${announcementDate}` : "Matangazo ya Sabato";
 }
 
 export default function SabbathAnnouncementPreview({

@@ -16,6 +16,7 @@ export type MediaCategory = "image" | "video";
 export type AnnouncementType = "emergency" | "sabbath" | "ongoing";
 export type AnnouncementWorkflowStatus = "draft" | "published";
 export type AnnouncementStatus = "draft" | "scheduled" | "active" | "expired";
+export type EventStatus = "draft" | "upcoming" | "ongoing" | "past";
 
 export type SabbathAnnouncementStepId =
   | "church_header"
@@ -175,6 +176,25 @@ export type GroupItem = {
   type: string;
 };
 
+export type EventItem = {
+  id: string;
+  title: string;
+  summary: string;
+  content: string;
+  imageUrl: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  isPublished: boolean;
+  status: EventStatus;
+  createdAt: string;
+  updatedAt: string;
+  createdById?: string;
+  createdByName?: string;
+  updatedById?: string;
+  updatedByName?: string;
+};
+
 export async function fetchDashboard() {
   const response = await api.get<ApiResponse<unknown>>("/admin/dashboard");
   return response.data.data as {
@@ -292,6 +312,13 @@ function mapLeaderUrls(item: LeaderItem): LeaderItem {
 }
 
 function mapGroupUrls(item: GroupItem): GroupItem {
+  return {
+    ...item,
+    imageUrl: resolvePublicUploadUrl(String(item?.imageUrl || ""))
+  };
+}
+
+function mapEventUrls(item: EventItem): EventItem {
   return {
     ...item,
     imageUrl: resolvePublicUploadUrl(String(item?.imageUrl || ""))
@@ -572,6 +599,46 @@ export async function updateGroup(groupId: string, payload: Record<string, unkno
 
 export async function deleteGroup(groupId: string) {
   await api.delete(`/admin/groups/${groupId}`);
+}
+
+export async function fetchEvents(params?: {
+  status?: EventStatus | "";
+  search?: string;
+  page?: number;
+  limit?: number;
+}) {
+  const response = await api.get<ApiResponse<EventItem[]>>("/admin/events", { params });
+  return {
+    ...response.data,
+    data: (response.data.data || []).map(mapEventUrls)
+  };
+}
+
+export async function fetchPublicEvents(params?: {
+  status?: EventStatus | "";
+  search?: string;
+  page?: number;
+  limit?: number;
+}) {
+  const response = await api.get<ApiResponse<EventItem[]>>("/public/events", { params });
+  return {
+    ...response.data,
+    data: (response.data.data || []).map(mapEventUrls)
+  };
+}
+
+export async function createEvent(payload: Record<string, unknown>) {
+  const response = await api.post<ApiResponse<EventItem>>("/admin/events", payload);
+  return mapEventUrls(response.data.data);
+}
+
+export async function updateEvent(eventId: string, payload: Record<string, unknown>) {
+  const response = await api.put<ApiResponse<EventItem>>(`/admin/events/${eventId}`, payload);
+  return mapEventUrls(response.data.data);
+}
+
+export async function deleteEvent(eventId: string) {
+  await api.delete(`/admin/events/${eventId}`);
 }
 
 export async function fetchReports(params?: { departmentId?: string; search?: string; page?: number; limit?: number }) {

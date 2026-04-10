@@ -45,14 +45,14 @@ const ANNOUNCEMENT_WIZARD_META: Record<
     publishingLabel: "This Sabbath announcement"
   },
   ongoing: {
-    createTitle: "Create event",
-    editTitle: "Continue event setup",
-    publishingLabel: "This event"
+    createTitle: "Create ongoing announcement",
+    editTitle: "Continue ongoing announcement setup",
+    publishingLabel: "This ongoing announcement"
   },
   emergency: {
-    createTitle: "Create emergency event",
-    editTitle: "Continue emergency event setup",
-    publishingLabel: "This emergency event"
+    createTitle: "Create emergency announcement",
+    editTitle: "Continue emergency announcement setup",
+    publishingLabel: "This emergency announcement"
   }
 };
 

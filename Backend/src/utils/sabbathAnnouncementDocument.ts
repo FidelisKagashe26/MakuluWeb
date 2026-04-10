@@ -197,17 +197,17 @@ function getAnnouncementDocumentLabels(typeInput: unknown) {
   const type = normalizeAnnouncementDocumentType(typeInput);
   if (type === "emergency") {
     return {
-      listTitle: "Emergency Events",
-      draftTitle: "Emergency Event Draft",
-      summaryLabel: "emergency event"
+      listTitle: "Emergency Announcements",
+      draftTitle: "Emergency Announcement Draft",
+      summaryLabel: "Emergency announcement"
     };
   }
 
   if (type === "ongoing") {
     return {
-      listTitle: "Church Events",
-      draftTitle: "Event Draft",
-      summaryLabel: "event"
+      listTitle: "Ongoing Announcements",
+      draftTitle: "Ongoing Announcement Draft",
+      summaryLabel: "Ongoing announcement"
     };
   }
 

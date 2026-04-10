@@ -28,12 +28,14 @@ const DepartmentsPage = lazy(() => import("./pages/DepartmentsPage"));
 const DepartmentDetailPage = lazy(() => import("./pages/DepartmentDetailPage"));
 const LeadersPage = lazy(() => import("./pages/LeadersPage"));
 const GroupsPage = lazy(() => import("./pages/GroupsPage"));
+const EventsPage = lazy(() => import("./pages/EventsPage"));
 const AnnouncementsPage = lazy(() => import("./pages/AnnouncementsPage"));
 const MediaPage = lazy(() => import("./pages/MediaPage"));
 const ChurchMapPage = lazy(() => import("./pages/church/ChurchMapPage"));
 const ChurchContactsPage = lazy(() => import("./pages/church/ChurchContactsPage"));
 const ChurchAboutPage = lazy(() => import("./pages/church/ChurchAboutPage"));
 const ChurchLibraryPage = lazy(() => import("./pages/church/ChurchLibraryPage"));
+const AdminEventsPage = lazy(() => import("./pages/admin/AdminEventsPage"));
 
 function NotFoundPage() {
   return (
@@ -58,7 +60,7 @@ function AdminIndexRedirect() {
     { section: "groups", path: "/admin/vikundi" },
     { section: "reports", path: "/admin/reports" },
     { section: "media", path: "/admin/media" },
-    { section: "announcements", path: "/admin/matukio" },
+    { section: "announcements", path: "/admin/matangazo" },
     { section: "users", path: "/admin/users" },
     { section: "account", path: "/admin/account" }
   ];
@@ -73,15 +75,17 @@ export default function App() {
   const isAdminPanel = location.pathname.startsWith("/admin");
   const isHomePage = location.pathname === "/" || location.pathname === "/home";
   const isMediaPage = location.pathname === "/media";
-  const isEventsPage = location.pathname === "/matukio" || location.pathname === "/matangazo";
+  const isEventsPage = location.pathname === "/matukio";
+  const isAnnouncementsPage = location.pathname === "/matangazo";
   const isChurchPage = location.pathname.startsWith("/kanisa");
-  const shouldConstrainPublicContent = isChurchPage || (!isHomePage && !isMediaPage && !isEventsPage);
+  const shouldConstrainPublicContent =
+    isChurchPage || (!isHomePage && !isMediaPage && !isEventsPage && !isAnnouncementsPage);
 
   const mainClass = isAdminPanel
     ? "min-h-screen"
     : isHomePage
       ? "flex-1"
-      : isMediaPage || isEventsPage
+      : isMediaPage || isEventsPage || isAnnouncementsPage
         ? "flex-1 pt-24"
         : "flex-1 pb-8 pt-24";
 
@@ -119,8 +123,8 @@ export default function App() {
         <Route path="/idara/:departmentId" element={<DepartmentDetailPage />} />
         <Route path="/viongozi" element={<LeadersPage />} />
         <Route path="/vikundi" element={<GroupsPage />} />
-        <Route path="/matukio" element={<AnnouncementsPage />} />
-        <Route path="/matangazo" element={<Navigate to="/matukio" replace />} />
+        <Route path="/matukio" element={<EventsPage />} />
+        <Route path="/matangazo" element={<AnnouncementsPage />} />
         <Route path="/media" element={<MediaPage />} />
         <Route path="/kanisa/ramani" element={<ChurchMapPage />} />
         <Route path="/kanisa/contacts" element={<ChurchContactsPage />} />
@@ -212,11 +216,18 @@ export default function App() {
             path="matukio"
             element={
               <ProtectedRoute permission="view" section="announcements">
+                <AdminEventsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="matangazo"
+            element={
+              <ProtectedRoute permission="view" section="announcements">
                 <AdminAnnouncementsPage />
               </ProtectedRoute>
             }
           />
-          <Route path="matangazo" element={<Navigate to="/admin/matukio" replace />} />
           <Route
             path="users"
             element={
