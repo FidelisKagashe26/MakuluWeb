@@ -63,19 +63,56 @@ export const SABBATH_STEP_DEFINITIONS: AnnouncementDocumentStepDefinition[] = [
   }
 ];
 
-const COMPACT_STEP_IDS: SabbathAnnouncementStepId[] = [
-  "church_header",
-  "announcement_date",
-  "announcement_items",
-  "publish_settings"
+const EVENT_STEP_DEFINITIONS: AnnouncementDocumentStepDefinition[] = [
+  {
+    id: "church_header",
+    title: "Event Header",
+    description: "Fill short header lines that appear on the event layout."
+  },
+  {
+    id: "announcement_date",
+    title: "Event Date",
+    description: "Set the main date for this event."
+  },
+  {
+    id: "announcement_items",
+    title: "Event Details",
+    description: "Write the key event points that will be shown to users."
+  },
+  {
+    id: "publish_settings",
+    title: "Publish Window",
+    description: "Choose start and end date to classify this event as upcoming, ongoing, or past."
+  }
 ];
 
-const COMPACT_STEP_DEFINITIONS = SABBATH_STEP_DEFINITIONS.filter((step) => COMPACT_STEP_IDS.includes(step.id));
+const EMERGENCY_EVENT_STEP_DEFINITIONS: AnnouncementDocumentStepDefinition[] = [
+  {
+    id: "church_header",
+    title: "Emergency Header",
+    description: "Fill short header lines for the emergency event."
+  },
+  {
+    id: "announcement_date",
+    title: "Emergency Date",
+    description: "Set the main date for this emergency event."
+  },
+  {
+    id: "announcement_items",
+    title: "Emergency Details",
+    description: "Write the urgent event points clearly and briefly."
+  },
+  {
+    id: "publish_settings",
+    title: "Publish Window",
+    description: "Choose start and end date to control when this emergency event is visible."
+  }
+];
 
 const STEP_DEFINITIONS_BY_TYPE: Record<AnnouncementType, AnnouncementDocumentStepDefinition[]> = {
   sabbath: SABBATH_STEP_DEFINITIONS,
-  ongoing: COMPACT_STEP_DEFINITIONS,
-  emergency: COMPACT_STEP_DEFINITIONS
+  ongoing: EVENT_STEP_DEFINITIONS,
+  emergency: EMERGENCY_EVENT_STEP_DEFINITIONS
 };
 
 function createRowId(prefix: string) {

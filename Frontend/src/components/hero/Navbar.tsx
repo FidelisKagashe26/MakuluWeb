@@ -19,10 +19,8 @@ type NavIconName =
 
 const links = [
   { label: "Mwanzo", type: "anchor", href: "/", icon: "home" as NavIconName },
-  { label: "Matangazo", type: "route", to: "/matangazo", icon: "announcements" as NavIconName },
-  { label: "Idara", type: "route", to: "/idara", icon: "departments" as NavIconName },
-  { label: "Viongozi", type: "route", to: "/viongozi", icon: "leaders" as NavIconName },
-  { label: "Vikundi", type: "route", to: "/vikundi", icon: "groups" as NavIconName }
+  { label: "Matukio", type: "route", to: "/matukio", icon: "announcements" as NavIconName },
+  { label: "Viongozi", type: "route", to: "/viongozi", icon: "leaders" as NavIconName }
 ] as const;
 
 const mediaMenuLinks = [

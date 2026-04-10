@@ -32,31 +32,31 @@ const typeOptions: Array<{
   description: string;
 }> = [
   {
-    value: "sabbath",
-    label: "Sabbath Announcements",
-    itemLabel: "Sabbath announcement",
-    description: "Announcements prepared specifically for the Sabbath service."
+    value: "ongoing",
+    label: "Matukio ya Kawaida",
+    itemLabel: "tukio",
+    description: "Matukio ya kawaida yanayoweza kuwekwa kwa tarehe yoyote."
   },
   {
-    value: "ongoing",
-    label: "Ongoing Announcements",
-    itemLabel: "Ongoing announcement",
-    description: "Announcements that stay visible across multiple days or weeks."
+    value: "sabbath",
+    label: "Matukio ya Sabato",
+    itemLabel: "tukio la Sabato",
+    description: "Matukio na matangazo maalum ya Sabato."
   },
   {
     value: "emergency",
-    label: "Emergency Announcements",
-    itemLabel: "Emergency announcement",
-    description: "Urgent announcements that need immediate visibility."
+    label: "Matukio ya Dharura",
+    itemLabel: "tukio la dharura",
+    description: "Matukio ya haraka yanayohitaji kuonekana mara moja."
   }
 ];
 
 const statusFilterOptions = [
-  { value: "", label: "All statuses" },
-  { value: "draft", label: "Draft" },
-  { value: "scheduled", label: "Scheduled" },
-  { value: "active", label: "Active" },
-  { value: "expired", label: "Expired" }
+  { value: "", label: "Status zote" },
+  { value: "draft", label: "Rasimu" },
+  { value: "scheduled", label: "Yajayo" },
+  { value: "active", label: "Yanayoendelea" },
+  { value: "expired", label: "Yaliyopita" }
 ];
 
 function getTypeMeta(type: AnnouncementType) {
@@ -71,11 +71,14 @@ function getStatusTone(status: AnnouncementStatus) {
 }
 
 function getStatusLabel(status: AnnouncementStatus) {
-  return status.charAt(0).toUpperCase() + status.slice(1);
+  if (status === "scheduled") return "Yajayo";
+  if (status === "active") return "Yanayoendelea";
+  if (status === "expired") return "Yaliyopita";
+  return "Rasimu";
 }
 
 function getWorkflowStatusLabel(status: AnnouncementWorkflowStatus) {
-  return status === "published" ? "Published" : "Draft";
+  return status === "published" ? "Imechapishwa" : "Rasimu";
 }
 
 function getScheduleLabel(item: AnnouncementItem) {
@@ -99,7 +102,7 @@ function getAnnouncementProgressText(item: AnnouncementItem) {
   const parsedDate = rawDate ? new Date(`${rawDate}T00:00:00`) : null;
   const dateLabel = parsedDate && !Number.isNaN(parsedDate.getTime()) ? format(parsedDate, "dd MMM yyyy") : "";
 
-  return `${completed}/${total} sections saved${dateLabel ? ` | ${dateLabel}` : ""}`;
+  return `${completed}/${total} hatua zimejazwa${dateLabel ? ` | ${dateLabel}` : ""}`;
 }
 
 function getExcerpt(item: AnnouncementItem) {
@@ -162,7 +165,7 @@ function resolveErrorMessage(error: unknown, fallback: string) {
 
 export default function AdminAnnouncementsPage() {
   const { hasPermission } = useAuth();
-  const [activeType, setActiveType] = useState<AnnouncementType>("sabbath");
+  const [activeType, setActiveType] = useState<AnnouncementType>("ongoing");
   const [statusFilterByType, setStatusFilterByType] = useState<Record<AnnouncementType, AnnouncementStatus | "">>({
     sabbath: "",
     ongoing: "",
@@ -262,7 +265,7 @@ export default function AdminAnnouncementsPage() {
 
   const saveDocumentDraft = async (goToNextStep = false) => {
     if (!(canCreate || canUpdate)) {
-      toast.error("You do not have permission to save drafts.");
+      toast.error("Huna ruhusa ya kuhifadhi rasimu.");
       return;
     }
 
@@ -291,10 +294,10 @@ export default function AdminAnnouncementsPage() {
       setDocumentStepIndex(
         goToNextStep ? Math.min(documentStepIndex + 1, stepDefinitions.length - 1) : Math.min(documentStepIndex, stepDefinitions.length - 1)
       );
-      toast.success(editingId ? "Step saved." : "Draft created and step saved.");
+      toast.success(editingId ? "Hatua imehifadhiwa." : "Rasimu imeundwa na hatua imehifadhiwa.");
       await refetch();
     } catch (saveError) {
-      toast.error(resolveErrorMessage(saveError, "Failed to save this step."));
+      toast.error(resolveErrorMessage(saveError, "Imeshindikana kuhifadhi hatua hii."));
     } finally {
       setIsSaving(false);
     }
@@ -302,7 +305,7 @@ export default function AdminAnnouncementsPage() {
 
   const publishDocumentAnnouncement = async () => {
     if (!canPublish) {
-      toast.error("You do not have permission to publish this announcement.");
+      toast.error("Huna ruhusa ya kuchapisha tukio hili.");
       return;
     }
 
@@ -324,15 +327,15 @@ export default function AdminAnnouncementsPage() {
       const saved = editingId ? await updateAnnouncement(editingId, payload) : await createAnnouncement(payload);
       toast.success(
         editingId
-          ? `${getTypeMeta(composerAnnouncementType).itemLabel} published.`
-          : `${getTypeMeta(composerAnnouncementType).itemLabel} created and published.`
+          ? `${getTypeMeta(composerAnnouncementType).itemLabel} limechapishwa.`
+          : `${getTypeMeta(composerAnnouncementType).itemLabel} limeundwa na kuchapishwa.`
       );
       setExpandedId(saved.id);
       setActiveType(composerAnnouncementType);
       closeComposer(composerAnnouncementType);
       await refetch();
     } catch (publishError) {
-      toast.error(resolveErrorMessage(publishError, "Failed to publish the announcement."));
+      toast.error(resolveErrorMessage(publishError, "Imeshindikana kuchapisha tukio."));
     } finally {
       setIsSaving(false);
     }
@@ -357,11 +360,11 @@ export default function AdminAnnouncementsPage() {
 
   const removeRow = async (announcementId: string) => {
     if (!canDelete) return;
-    if (!window.confirm("Delete this announcement?")) return;
+    if (!window.confirm("Unataka kufuta tukio hili?")) return;
 
     try {
       await deleteAnnouncement(announcementId);
-      toast.success("Announcement deleted.");
+      toast.success("Tukio limefutwa.");
       if (editingId === announcementId) {
         closeComposer(activeType);
       }
@@ -370,14 +373,14 @@ export default function AdminAnnouncementsPage() {
       }
       await refetch();
     } catch (deleteError) {
-      toast.error(resolveErrorMessage(deleteError, "Failed to delete announcement."));
+      toast.error(resolveErrorMessage(deleteError, "Imeshindikana kufuta tukio."));
     }
   };
 
   return (
     <div className="space-y-5">
       <header>
-        <h1 className="text-2xl font-bold text-white">Announcements Management</h1>
+        <h1 className="text-2xl font-bold text-white">Usimamizi wa Matukio</h1>
       </header>
 
       <section className="flex flex-wrap gap-3">
@@ -405,8 +408,8 @@ export default function AdminAnnouncementsPage() {
         })}
       </section>
 
-      {isLoading ? <p className="text-sm text-slate-300">Loading announcements...</p> : null}
-      {error ? <p className="text-sm text-rose-300">Failed to load announcements.</p> : null}
+      {isLoading ? <p className="text-sm text-slate-300">Inapakia matukio...</p> : null}
+      {error ? <p className="text-sm text-rose-300">Imeshindikana kupakia matukio.</p> : null}
 
       <section className="rounded-md bg-white/[0.03] p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -417,11 +420,11 @@ export default function AdminAnnouncementsPage() {
 
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-md bg-white/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.1em] text-slate-200">
-              {activeRows.length} items
+              {activeRows.length} matukio
             </span>
             {canCreate ? (
               <button type="button" className="admin-btn-primary" onClick={() => openComposer(activeType)}>
-                + Add {activeTypeMeta.itemLabel}
+                + Ongeza {activeTypeMeta.itemLabel}
               </button>
             ) : null}
           </div>
@@ -430,7 +433,7 @@ export default function AdminAnnouncementsPage() {
         <div className="mt-4 grid gap-3 md:grid-cols-[1fr_13rem]">
           <input
             className="form-input"
-            placeholder={`Search ${activeTypeMeta.label.toLowerCase()}...`}
+            placeholder={`Tafuta ndani ya ${activeTypeMeta.label.toLowerCase()}...`}
             value={searchByType[activeType]}
             onChange={(event) =>
               setSearchByType((current) => ({
@@ -449,6 +452,35 @@ export default function AdminAnnouncementsPage() {
               }))
             }
           />
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {statusFilterOptions.map((option) => {
+            const selected = activeStatusFilter === option.value;
+            return (
+              <button
+                key={`quick-status-${option.value || "all"}`}
+                type="button"
+                onClick={() =>
+                  setStatusFilterByType((current) => ({
+                    ...current,
+                    [activeType]: option.value as AnnouncementStatus | ""
+                  }))
+                }
+                className={[
+                  "rounded-md border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] transition",
+                  selected
+                    ? "border-church-300/60 bg-church-600/20 text-white"
+                    : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-white/20 hover:bg-white/[0.06]"
+                ].join(" ")}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+          <p className="text-xs text-slate-400">
+            Status inahesabiwa kiotomatiki kwa kutumia tarehe za Start/End kwenye hatua ya Publish Settings.
+          </p>
         </div>
 
         {isComposerOpen ? (
@@ -473,11 +505,11 @@ export default function AdminAnnouncementsPage() {
             <thead>
               <tr className="bg-white/[0.05] text-left">
                 <th className="w-16 px-3 py-2">S/N</th>
-                <th className="min-w-[18rem] px-3 py-2">Title</th>
+                <th className="min-w-[18rem] px-3 py-2">Jina la Tukio</th>
                 <th className="px-3 py-2">Status</th>
-                <th className="min-w-[16rem] px-3 py-2">Schedule</th>
-                <th className="min-w-[14rem] px-3 py-2">Last updated</th>
-                <th className="px-3 py-2">Actions</th>
+                <th className="min-w-[16rem] px-3 py-2">Ratiba</th>
+                <th className="min-w-[14rem] px-3 py-2">Imehaririwa</th>
+                <th className="px-3 py-2">Vitendo</th>
               </tr>
             </thead>
             <tbody>
@@ -520,16 +552,16 @@ export default function AdminAnnouncementsPage() {
                             className="admin-btn-ghost px-2.5 py-1.5"
                             onClick={() => toggleView(row.id)}
                           >
-                            {isExpanded ? "Hide" : "View"}
+                            {isExpanded ? "Funga" : "Tazama"}
                           </button>
                           {canUpdate ? (
                             <button type="button" className="admin-btn-ghost px-2.5 py-1.5" onClick={() => editRow(row)}>
-                              Edit
+                              Hariri
                             </button>
                           ) : null}
                           {canDelete ? (
                             <button type="button" className="admin-btn-danger px-2.5 py-1.5" onClick={() => void removeRow(row.id)}>
-                              Delete
+                              Futa
                             </button>
                           ) : null}
                         </div>
@@ -540,7 +572,7 @@ export default function AdminAnnouncementsPage() {
               ) : (
                 <tr className="border-t border-white/10">
                   <td colSpan={6} className="px-3 py-6 text-center text-sm text-slate-400">
-                    No announcements found in this category.
+                    Hakuna matukio kwenye kundi hili.
                   </td>
                 </tr>
               )}

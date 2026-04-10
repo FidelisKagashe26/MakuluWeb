@@ -274,15 +274,15 @@ function extractBlocksFromHtml(contentHtml: string, bodySize: number, maxChars: 
 }
 
 function formatAnnouncementType(type: string) {
-  if (type === "emergency") return "Matangazo ya dharura";
-  if (type === "sabbath") return "Matangazo ya Sabato";
-  return "Matangazo endelevu";
+  if (type === "emergency") return "Matukio ya dharura";
+  if (type === "sabbath") return "Matukio ya Sabato";
+  return "Matukio ya kawaida";
 }
 
 function formatAnnouncementDocumentTitle(type: string) {
-  if (type === "emergency") return "MATANGAZO YA DHARURA";
-  if (type === "sabbath") return "MATANGAZO YA SIKU YA SABATO";
-  return "MATANGAZO ENDELEVU";
+  if (type === "emergency") return "MATUKIO YA DHARURA";
+  if (type === "sabbath") return "MATUKIO YA SIKU YA SABATO";
+  return "MATUKIO YA KAWAIDA";
 }
 
 function formatStructuredAnnouncementTitle(type: string, announcementDate: string) {

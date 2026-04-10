@@ -20,7 +20,7 @@ void i18n.use(initReactI18next).init({
           language: "Lugha"
         },
         hero: {
-          ctaPrimary: "Angalia Matangazo",
+          ctaPrimary: "Angalia Matukio",
           ctaSecondary: "Wasiliana Nasi"
         }
       }
@@ -37,7 +37,7 @@ void i18n.use(initReactI18next).init({
           language: "Language"
         },
         hero: {
-          ctaPrimary: "View Announcements",
+          ctaPrimary: "View Events",
           ctaSecondary: "Contact Us"
         }
       }

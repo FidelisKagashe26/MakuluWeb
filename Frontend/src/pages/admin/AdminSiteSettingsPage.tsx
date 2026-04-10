@@ -150,7 +150,7 @@ const defaultQuickLinks: QuickLinkForm[] = [
   { id: "quick-idara", label: "Idara", href: "/idara" },
   { id: "quick-viongozi", label: "Viongozi", href: "/viongozi" },
   { id: "quick-vikundi", label: "Vikundi", href: "/vikundi" },
-  { id: "quick-matangazo", label: "Matangazo", href: "/matangazo" },
+  { id: "quick-matukio", label: "Matukio", href: "/matukio" },
   { id: "quick-mawasiliano", label: "Mawasiliano", href: "/#mawasiliano" }
 ];
 
@@ -588,10 +588,29 @@ export default function AdminSiteSettingsPage({ forcedTab }: AdminSiteSettingsPa
     event.target.value = "";
   };
 
-  const handleUseLiveLocation = () => {
+  const handleUseLiveLocation = async () => {
     if (!navigator.geolocation) {
       toast.error("Geolocation haipatikani kwenye browser hii.");
       return;
+    }
+
+    const host = window.location.hostname;
+    const isLocalhost = host === "localhost" || host === "127.0.0.1" || host === "::1";
+    if (!window.isSecureContext && !isLocalhost) {
+      toast.error("Geolocation inahitaji HTTPS (au localhost). Fungua site kwa https.");
+      return;
+    }
+
+    try {
+      if (navigator.permissions?.query) {
+        const permission = await navigator.permissions.query({ name: "geolocation" as PermissionName });
+        if (permission.state === "denied") {
+          toast.error("Ruhusu location permission kwenye browser settings kisha jaribu tena.");
+          return;
+        }
+      }
+    } catch {
+      // Ignore permission API failures and fallback to geolocation request directly.
     }
 
     setIsDetectingLocation(true);
@@ -604,13 +623,29 @@ export default function AdminSiteSettingsPage({ forcedTab }: AdminSiteSettingsPa
           mapLabel: prev.mapLabel || prev.churchName || "Kanisa"
         }));
         setIsDetectingLocation(false);
-        toast.success("Live location imechukuliwa.");
+        toast.success("Live location imechukuliwa. Bonyeza Save Map Settings kuhifadhi.");
       },
-      () => {
+      (error) => {
         setIsDetectingLocation(false);
+
+        if (error.code === error.PERMISSION_DENIED) {
+          toast.error("Umezuia ruhusa ya location. Ruhusu location kwenye browser kisha jaribu tena.");
+          return;
+        }
+
+        if (error.code === error.POSITION_UNAVAILABLE) {
+          toast.error("Location haijapatikana kwa sasa. Hakikisha GPS/network ipo vizuri.");
+          return;
+        }
+
+        if (error.code === error.TIMEOUT) {
+          toast.error("Imeshindikana kwa sababu ya muda kuisha. Jaribu tena.");
+          return;
+        }
+
         toast.error("Imeshindikana kupata live location.");
       },
-      { enableHighAccuracy: true, timeout: 15000 }
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
     );
   };
 
@@ -1045,14 +1080,54 @@ export default function AdminSiteSettingsPage({ forcedTab }: AdminSiteSettingsPa
   const handleSaveMap = async () => {
     try {
       setSavingSection("map");
-      const latitude = Number(form.mapLatitude);
-      const longitude = Number(form.mapLongitude);
-      const zoom = Number(form.mapZoom);
+      const parseOptionalNumber = (value: string) => {
+        const trimmed = String(value || "").trim();
+        if (!trimmed) return null;
+        const parsed = Number(trimmed);
+        return Number.isFinite(parsed) ? parsed : null;
+      };
+
+      const latitude = parseOptionalNumber(form.mapLatitude);
+      const longitude = parseOptionalNumber(form.mapLongitude);
+      const zoomRaw = String(form.mapZoom || "").trim();
+      const zoomParsed = Number(zoomRaw);
+      const zoom = Number.isFinite(zoomParsed) ? zoomParsed : 15;
+
+      if (form.mapLatitude.trim() && latitude === null) {
+        toast.error("Latitude si namba halali.");
+        return;
+      }
+
+      if (form.mapLongitude.trim() && longitude === null) {
+        toast.error("Longitude si namba halali.");
+        return;
+      }
+
+      if ((latitude === null) !== (longitude === null)) {
+        toast.error("Weka latitude na longitude pamoja.");
+        return;
+      }
+
+      if (latitude !== null && (latitude < -90 || latitude > 90)) {
+        toast.error("Latitude lazima iwe kati ya -90 na 90.");
+        return;
+      }
+
+      if (longitude !== null && (longitude < -180 || longitude > 180)) {
+        toast.error("Longitude lazima iwe kati ya -180 na 180.");
+        return;
+      }
+
+      if (zoom < 1 || zoom > 22) {
+        toast.error("Zoom lazima iwe kati ya 1 na 22.");
+        return;
+      }
+
       await updateSiteSettings({
         mapLocation: {
-          latitude: Number.isFinite(latitude) ? latitude : null,
-          longitude: Number.isFinite(longitude) ? longitude : null,
-          zoom: Number.isFinite(zoom) ? zoom : 15,
+          latitude,
+          longitude,
+          zoom,
           label: form.mapLabel.trim()
         }
       });
@@ -1775,7 +1850,7 @@ export default function AdminSiteSettingsPage({ forcedTab }: AdminSiteSettingsPa
               <input
                 className="form-input"
                 value={form.mapLatitude}
-                readOnly
+                onChange={(e) => handleInput("mapLatitude", e.target.value)}
               />
             </label>
             <label className="grid gap-1 text-sm font-semibold">
@@ -1783,7 +1858,7 @@ export default function AdminSiteSettingsPage({ forcedTab }: AdminSiteSettingsPa
               <input
                 className="form-input"
                 value={form.mapLongitude}
-                readOnly
+                onChange={(e) => handleInput("mapLongitude", e.target.value)}
               />
             </label>
             <label className="grid gap-1 text-sm font-semibold">

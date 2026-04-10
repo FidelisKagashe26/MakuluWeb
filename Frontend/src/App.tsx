@@ -58,7 +58,7 @@ function AdminIndexRedirect() {
     { section: "groups", path: "/admin/vikundi" },
     { section: "reports", path: "/admin/reports" },
     { section: "media", path: "/admin/media" },
-    { section: "announcements", path: "/admin/matangazo" },
+    { section: "announcements", path: "/admin/matukio" },
     { section: "users", path: "/admin/users" },
     { section: "account", path: "/admin/account" }
   ];
@@ -73,15 +73,15 @@ export default function App() {
   const isAdminPanel = location.pathname.startsWith("/admin");
   const isHomePage = location.pathname === "/" || location.pathname === "/home";
   const isMediaPage = location.pathname === "/media";
-  const isAnnouncementsPage = location.pathname === "/matangazo";
+  const isEventsPage = location.pathname === "/matukio" || location.pathname === "/matangazo";
   const isChurchPage = location.pathname.startsWith("/kanisa");
-  const shouldConstrainPublicContent = isChurchPage || (!isHomePage && !isMediaPage && !isAnnouncementsPage);
+  const shouldConstrainPublicContent = isChurchPage || (!isHomePage && !isMediaPage && !isEventsPage);
 
   const mainClass = isAdminPanel
     ? "min-h-screen"
     : isHomePage
       ? "flex-1"
-      : isMediaPage || isAnnouncementsPage
+      : isMediaPage || isEventsPage
         ? "flex-1 pt-24"
         : "flex-1 pb-8 pt-24";
 
@@ -119,7 +119,8 @@ export default function App() {
         <Route path="/idara/:departmentId" element={<DepartmentDetailPage />} />
         <Route path="/viongozi" element={<LeadersPage />} />
         <Route path="/vikundi" element={<GroupsPage />} />
-        <Route path="/matangazo" element={<AnnouncementsPage />} />
+        <Route path="/matukio" element={<AnnouncementsPage />} />
+        <Route path="/matangazo" element={<Navigate to="/matukio" replace />} />
         <Route path="/media" element={<MediaPage />} />
         <Route path="/kanisa/ramani" element={<ChurchMapPage />} />
         <Route path="/kanisa/contacts" element={<ChurchContactsPage />} />
@@ -208,13 +209,14 @@ export default function App() {
             }
           />
           <Route
-            path="matangazo"
+            path="matukio"
             element={
               <ProtectedRoute permission="view" section="announcements">
                 <AdminAnnouncementsPage />
               </ProtectedRoute>
             }
           />
+          <Route path="matangazo" element={<Navigate to="/admin/matukio" replace />} />
           <Route
             path="users"
             element={

@@ -35,7 +35,7 @@ export default function HeroSection() {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <a
-              href="#matangazo"
+              href="/matukio"
               className="rounded-xl bg-church-700 px-5 py-3 text-sm font-bold text-white transition hover:bg-church-800"
             >
               {t("hero.ctaPrimary")}

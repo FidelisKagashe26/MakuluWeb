@@ -146,8 +146,8 @@ const defaultSiteSettings = {
         scripture: '"Nami nikawafurahia waliponiambia, Twende nyumbani kwa Bwana." Zaburi 122:1',
         description:
           "Karibu kwenye jukwaa rasmi la kanisa kwa ibada, matangazo, idara, viongozi, na huduma za kiroho.",
-        primaryLabel: "Angalia Matangazo",
-        primaryHref: "/#matangazo",
+        primaryLabel: "Angalia Matukio",
+        primaryHref: "/matukio",
         secondaryLabel: "Wasiliana Nasi",
         secondaryHref: "/#mawasiliano",
         brightness: "dark"
@@ -230,7 +230,7 @@ const defaultSiteSettings = {
       { id: "quick-idara", label: "Idara", href: "/idara" },
       { id: "quick-viongozi", label: "Viongozi", href: "/viongozi" },
       { id: "quick-vikundi", label: "Vikundi", href: "/vikundi" },
-      { id: "quick-matangazo", label: "Matangazo", href: "/matangazo" },
+      { id: "quick-matukio", label: "Matukio", href: "/matukio" },
       { id: "quick-mawasiliano", label: "Mawasiliano", href: "/#mawasiliano" }
     ],
     seo: {

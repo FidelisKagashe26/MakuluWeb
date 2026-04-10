@@ -7,7 +7,7 @@ const routes = [
   "/idara",
   "/viongozi",
   "/vikundi",
-  "/matangazo",
+  "/matukio",
   "/media",
   "/admin/login"
 ];

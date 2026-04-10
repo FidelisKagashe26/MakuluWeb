@@ -10,7 +10,7 @@ export default function EventsSection() {
 
   return (
     <motion.section
-      id="matangazo"
+      id="matukio"
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
@@ -20,9 +20,9 @@ export default function EventsSection() {
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-church-700">
-            Matangazo
+            Matukio
           </p>
-          <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Upcoming Events / Auto Live</h3>
+          <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Matukio Yanayoendelea</h3>
         </div>
         <p className="text-sm text-slate-500 dark:text-slate-300">
           Yanayoonekana sasa yanazingatia sheria ya startDate/endDate.
@@ -31,7 +31,7 @@ export default function EventsSection() {
 
       {visibleEvents.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-church-300/55 bg-white/75 p-5 text-sm text-slate-700 dark:border-church-700/45 dark:bg-church-950/55 dark:text-slate-300">
-          Hakuna tangazo active kwa sasa.
+          Hakuna tukio linaloendelea kwa sasa.
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -47,7 +47,7 @@ export default function EventsSection() {
                     : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
                 }`}
               >
-                Live
+                Inaendelea
               </span>
               <h4 className="mt-3 text-lg font-semibold text-slate-900 dark:text-white">{event.title}</h4>
               <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{event.content}</p>

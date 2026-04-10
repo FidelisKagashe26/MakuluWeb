@@ -111,7 +111,7 @@ const navItems: NavItem[] = [
   { label: "Groups", to: "/admin/vikundi", section: "groups", icon: <IconGroups />, requires: ["view"] },
   { label: "Reports", to: "/admin/reports", section: "reports", icon: <IconReports />, requires: ["view"] },
   { label: "Media", to: "/admin/media", section: "media", icon: <IconMedia />, requires: ["view"] },
-  { label: "Announcements", to: "/admin/matangazo", section: "announcements", icon: <IconAnnouncement />, requires: ["view"] },
+  { label: "Matukio", to: "/admin/matukio", section: "announcements", icon: <IconAnnouncement />, requires: ["view"] },
   { label: "Users", to: "/admin/users", section: "users", icon: <IconUsers />, requires: ["view"] }
 ];
 

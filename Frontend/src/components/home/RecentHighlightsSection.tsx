@@ -91,12 +91,12 @@ export default function RecentHighlightsSection() {
         const announcementItems: RecentMixedItem[] = (announcementsRes.data?.data || []).map((item) => ({
           id: `ann-${item.id}`,
           kind: "announcement",
-          badge: "Matangazo",
+          badge: "Matukio",
           title: item.title,
           excerpt: truncateText(item.content, 135),
           date: item.startDate || null,
           imageUrl: "",
-          href: "/matangazo"
+          href: "/matukio"
         }));
 
         const reportItems: RecentMixedItem[] = (reportsRes.data?.data || []).map((item) => ({

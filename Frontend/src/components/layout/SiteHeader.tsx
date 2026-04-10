@@ -56,17 +56,11 @@ export default function SiteHeader() {
         <NavLink to="/" className={navClass}>
           {t("nav.home")}
         </NavLink>
-        <NavLink to="/idara" className={navClass}>
-          Idara
-        </NavLink>
         <NavLink to="/viongozi" className={navClass}>
           Viongozi
         </NavLink>
-        <NavLink to="/vikundi" className={navClass}>
-          Vikundi
-        </NavLink>
-        <NavLink to="/matangazo" className={navClass}>
-          Matangazo
+        <NavLink to="/matukio" className={navClass}>
+          Matukio
         </NavLink>
         <NavLink to="/admin/login" className={navClass}>
           {t("nav.admin")}
@@ -103,17 +97,11 @@ export default function SiteHeader() {
               <NavLink to="/" className={navClass} onClick={closeMenu}>
                 {t("nav.home")}
               </NavLink>
-              <NavLink to="/idara" className={navClass} onClick={closeMenu}>
-                Idara
-              </NavLink>
               <NavLink to="/viongozi" className={navClass} onClick={closeMenu}>
                 Viongozi
               </NavLink>
-              <NavLink to="/vikundi" className={navClass} onClick={closeMenu}>
-                Vikundi
-              </NavLink>
-              <NavLink to="/matangazo" className={navClass} onClick={closeMenu}>
-                Matangazo
+              <NavLink to="/matukio" className={navClass} onClick={closeMenu}>
+                Matukio
               </NavLink>
               <NavLink to="/admin/login" className={navClass} onClick={closeMenu}>
                 {t("nav.admin")}
