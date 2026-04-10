@@ -72,6 +72,13 @@ function isValidDate(input: string) {
   return !Number.isNaN(ts);
 }
 
+function getRouteParam(value: string | string[] | undefined) {
+  if (Array.isArray(value)) {
+    return String(value[0] || "").trim();
+  }
+  return String(value || "").trim();
+}
+
 export async function getEvents(req: Request, res: Response) {
   try {
     const page = Number(req.query.page || 1);
@@ -158,7 +165,12 @@ export async function createEventHandler(req: Request, res: Response) {
 
 export async function updateEventHandler(req: Request, res: Response) {
   try {
-    const current = await findEventById(req.params.eventId);
+    const eventId = getRouteParam(req.params.eventId);
+    if (!eventId) {
+      return res.status(400).json({ ok: false, message: "eventId inahitajika." });
+    }
+
+    const current = await findEventById(eventId);
     if (!current) {
       return res.status(404).json({ ok: false, message: "Tukio halijapatikana." });
     }
@@ -191,7 +203,12 @@ export async function updateEventHandler(req: Request, res: Response) {
 
 export async function deleteEventHandler(req: Request, res: Response) {
   try {
-    const success = await deleteEvent(req.params.eventId);
+    const eventId = getRouteParam(req.params.eventId);
+    if (!eventId) {
+      return res.status(400).json({ ok: false, message: "eventId inahitajika." });
+    }
+
+    const success = await deleteEvent(eventId);
     if (!success) {
       return res.status(404).json({ ok: false, message: "Tukio halijapatikana." });
     }
@@ -202,4 +219,3 @@ export async function deleteEventHandler(req: Request, res: Response) {
     return res.status(500).json({ ok: false, message: "Kuna hitilafu ya server." });
   }
 }
-

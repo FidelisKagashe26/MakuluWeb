@@ -10,10 +10,10 @@ import { useApiQuery } from "@/hooks/useApiQuery";
 import SabbathAnnouncementPreview from "@/components/announcements/SabbathAnnouncementPreview";
 import { Menu, X } from "lucide-react";
 
-type EventStatus = "scheduled" | "active" | "expired";
+type AnnouncementStatus = "scheduled" | "active" | "expired";
 
 type StatusCard = {
-  key: EventStatus;
+  key: AnnouncementStatus;
   title: string;
   description: string;
   emptyState: string;
@@ -23,20 +23,20 @@ const statusCards: StatusCard[] = [
   {
     key: "active",
     title: "Yanayoendelea",
-    description: "Matukio yanayoonekana live kwa sasa.",
-    emptyState: "Hakuna tukio linaloendelea kwa sasa."
+    description: "Matangazo yanayoonekana live kwa sasa.",
+    emptyState: "Hakuna tangazo linaloendelea kwa sasa."
   },
   {
     key: "scheduled",
     title: "Yajayo",
-    description: "Matukio yaliyoratibiwa kuja mbele.",
-    emptyState: "Hakuna tukio la yajayo kwa sasa."
+    description: "Matangazo yaliyoratibiwa kuja mbele.",
+    emptyState: "Hakuna tangazo la yajayo kwa sasa."
   },
   {
     key: "expired",
     title: "Yaliyopita",
-    description: "Kumbukumbu ya matukio yaliyomalizika.",
-    emptyState: "Hakuna tukio lililopita kwa sasa."
+    description: "Kumbukumbu ya matangazo yaliyomalizika.",
+    emptyState: "Hakuna tangazo lililopita kwa sasa."
   }
 ];
 
@@ -78,17 +78,17 @@ function getAnnouncementCardText(item: AnnouncementItem) {
 
   const summary = String(item.summary || "").trim();
   if (summary) return summary;
-  return "No summary";
+  return "Hakuna muhtasari";
 }
 
 function getDateTimeLabel(value?: string) {
-  if (!value) return "Not set";
+  if (!value) return "Haijawekwa";
   const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return "Not set";
+  if (Number.isNaN(parsed.getTime())) return "Haijawekwa";
   return format(parsed, "dd MMM yyyy, HH:mm");
 }
 
-function getNewestActiveEventId(items: AnnouncementItem[]) {
+function getNewestActiveAnnouncementId(items: AnnouncementItem[]) {
   return items.find((item) => item.status === "active")?.id || "";
 }
 
@@ -98,7 +98,7 @@ function toTs(value?: string) {
 }
 
 export default function AnnouncementsPage() {
-  const [activeStatus, setActiveStatus] = useState<EventStatus>("active");
+  const [activeStatus, setActiveStatus] = useState<AnnouncementStatus>("active");
   const [selectedId, setSelectedId] = useState<string>("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const mobileSidebarTop = "var(--navbar-height, 64px)";
@@ -112,7 +112,7 @@ export default function AnnouncementsPage() {
   const allEvents = useMemo<AnnouncementItem[]>(() => data?.data ?? [], [data]);
 
   const countsByStatus = useMemo(() => {
-    const initial: Record<EventStatus, number> = {
+    const initial: Record<AnnouncementStatus, number> = {
       scheduled: 0,
       active: 0,
       expired: 0
@@ -143,7 +143,7 @@ export default function AnnouncementsPage() {
     });
   }, [allEvents, activeStatus]);
 
-  const newestActiveId = useMemo(() => getNewestActiveEventId(allEvents), [allEvents]);
+  const newestActiveId = useMemo(() => getNewestActiveAnnouncementId(allEvents), [allEvents]);
   const activeStatusMeta = useMemo(
     () => statusCards.find((card) => card.key === activeStatus) || statusCards[0],
     [activeStatus]
@@ -179,10 +179,10 @@ export default function AnnouncementsPage() {
   return (
     <>
       <Helmet>
-        <title>Matukio | DODOMA MAKULU SDA CHURCH</title>
+        <title>Matangazo | DODOMA MAKULU SDA CHURCH</title>
         <meta
           name="description"
-          content="Matukio ya kanisa: yajayo, yanayoendelea, na yaliyopita."
+          content="Matangazo ya kanisa: yajayo, yanayoendelea, na yaliyopita."
         />
       </Helmet>
 
@@ -191,9 +191,9 @@ export default function AnnouncementsPage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-church-600 dark:text-church-300">
-                CHURCH EVENTS
+                CHURCH ANNOUNCEMENTS
               </p>
-              <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">Matukio ya Kanisa</h1>
+              <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">Matangazo ya Kanisa</h1>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
                 {activeStatusMeta.description}
               </p>
@@ -286,7 +286,7 @@ export default function AnnouncementsPage() {
           >
             <div className="flex items-center justify-between lg:block">
               <h3 className="px-2 text-sm font-semibold uppercase tracking-[0.14em] text-church-600 dark:text-church-300">
-                Matukio
+                Matangazo
               </h3>
               <button type="button" onClick={() => setSidebarOpen(false)} className="lg:hidden">
                 <X className="h-5 w-5 text-slate-600 dark:text-slate-300" />
@@ -369,7 +369,7 @@ export default function AnnouncementsPage() {
 
             {error ? (
               <div className="rounded-2xl border border-rose-300 bg-rose-50/70 p-4 text-sm text-rose-700 dark:border-rose-400/45 dark:bg-rose-900/25 dark:text-rose-200">
-                Imeshindikana kupakia matukio.
+                Imeshindikana kupakia matangazo.
               </div>
             ) : null}
 

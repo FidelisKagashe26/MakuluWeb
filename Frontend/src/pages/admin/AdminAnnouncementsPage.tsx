@@ -33,21 +33,21 @@ const typeOptions: Array<{
 }> = [
   {
     value: "ongoing",
-    label: "Matukio ya Kawaida",
-    itemLabel: "tukio",
-    description: "Matukio ya kawaida yanayoweza kuwekwa kwa tarehe yoyote."
+    label: "Matangazo ya Kawaida",
+    itemLabel: "tangazo",
+    description: "Matangazo ya kawaida yanayoweza kuwekwa kwa tarehe yoyote."
   },
   {
     value: "sabbath",
-    label: "Matukio ya Sabato",
-    itemLabel: "tukio la Sabato",
-    description: "Matukio na matangazo maalum ya Sabato."
+    label: "Matangazo ya Sabato",
+    itemLabel: "tangazo la Sabato",
+    description: "Matangazo maalum ya Sabato."
   },
   {
     value: "emergency",
-    label: "Matukio ya Dharura",
-    itemLabel: "tukio la dharura",
-    description: "Matukio ya haraka yanayohitaji kuonekana mara moja."
+    label: "Matangazo ya Dharura",
+    itemLabel: "tangazo la dharura",
+    description: "Matangazo ya haraka yanayohitaji kuonekana mara moja."
   }
 ];
 
@@ -82,14 +82,14 @@ function getWorkflowStatusLabel(status: AnnouncementWorkflowStatus) {
 }
 
 function getScheduleLabel(item: AnnouncementItem) {
-  if (!item.startDate || !item.endDate) return "No schedule";
+  if (!item.startDate || !item.endDate) return "Hakuna ratiba";
   return `${format(new Date(item.startDate), "dd MMM yyyy, HH:mm")} - ${format(new Date(item.endDate), "dd MMM yyyy, HH:mm")}`;
 }
 
 function getDisplayDate(value?: string) {
-  if (!value) return "No date";
+  if (!value) return "Hakuna tarehe";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "No date";
+  if (Number.isNaN(date.getTime())) return "Hakuna tarehe";
   return format(date, "dd MMM yyyy, HH:mm");
 }
 
@@ -119,7 +119,7 @@ function getExcerpt(item: AnnouncementItem) {
     .replace(/\s+/g, " ")
     .trim();
 
-  if (!plain) return "No content";
+  if (!plain) return "Hakuna maudhui";
   return plain.length > 180 ? `${plain.slice(0, 180)}...` : plain;
 }
 
@@ -146,7 +146,7 @@ function getFullContent(item: AnnouncementItem) {
   if (content) return content;
 
   const summary = String(item.summary || "").trim();
-  return summary || "No content";
+  return summary || "Hakuna maudhui";
 }
 
 function getNewestActiveAnnouncementId(items: AnnouncementItem[], type: AnnouncementType) {
@@ -305,7 +305,7 @@ export default function AdminAnnouncementsPage() {
 
   const publishDocumentAnnouncement = async () => {
     if (!canPublish) {
-      toast.error("Huna ruhusa ya kuchapisha tukio hili.");
+      toast.error("Huna ruhusa ya kuchapisha tangazo hili.");
       return;
     }
 
@@ -335,7 +335,7 @@ export default function AdminAnnouncementsPage() {
       closeComposer(composerAnnouncementType);
       await refetch();
     } catch (publishError) {
-      toast.error(resolveErrorMessage(publishError, "Imeshindikana kuchapisha tukio."));
+      toast.error(resolveErrorMessage(publishError, "Imeshindikana kuchapisha tangazo."));
     } finally {
       setIsSaving(false);
     }
@@ -360,11 +360,11 @@ export default function AdminAnnouncementsPage() {
 
   const removeRow = async (announcementId: string) => {
     if (!canDelete) return;
-    if (!window.confirm("Unataka kufuta tukio hili?")) return;
+    if (!window.confirm("Unataka kufuta tangazo hili?")) return;
 
     try {
       await deleteAnnouncement(announcementId);
-      toast.success("Tukio limefutwa.");
+      toast.success("Tangazo limefutwa.");
       if (editingId === announcementId) {
         closeComposer(activeType);
       }
@@ -373,14 +373,14 @@ export default function AdminAnnouncementsPage() {
       }
       await refetch();
     } catch (deleteError) {
-      toast.error(resolveErrorMessage(deleteError, "Imeshindikana kufuta tukio."));
+      toast.error(resolveErrorMessage(deleteError, "Imeshindikana kufuta tangazo."));
     }
   };
 
   return (
     <div className="space-y-5">
       <header>
-        <h1 className="text-2xl font-bold text-white">Usimamizi wa Matukio</h1>
+        <h1 className="text-2xl font-bold text-white">Usimamizi wa Matangazo</h1>
       </header>
 
       <section className="flex flex-wrap gap-3">
@@ -408,8 +408,8 @@ export default function AdminAnnouncementsPage() {
         })}
       </section>
 
-      {isLoading ? <p className="text-sm text-slate-300">Inapakia matukio...</p> : null}
-      {error ? <p className="text-sm text-rose-300">Imeshindikana kupakia matukio.</p> : null}
+      {isLoading ? <p className="text-sm text-slate-300">Inapakia matangazo...</p> : null}
+      {error ? <p className="text-sm text-rose-300">Imeshindikana kupakia matangazo.</p> : null}
 
       <section className="rounded-md bg-white/[0.03] p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -420,7 +420,7 @@ export default function AdminAnnouncementsPage() {
 
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-md bg-white/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.1em] text-slate-200">
-              {activeRows.length} matukio
+              {activeRows.length} matangazo
             </span>
             {canCreate ? (
               <button type="button" className="admin-btn-primary" onClick={() => openComposer(activeType)}>
@@ -505,7 +505,7 @@ export default function AdminAnnouncementsPage() {
             <thead>
               <tr className="bg-white/[0.05] text-left">
                 <th className="w-16 px-3 py-2">S/N</th>
-                <th className="min-w-[18rem] px-3 py-2">Jina la Tukio</th>
+                <th className="min-w-[18rem] px-3 py-2">Jina la Tangazo</th>
                 <th className="px-3 py-2">Status</th>
                 <th className="min-w-[16rem] px-3 py-2">Ratiba</th>
                 <th className="min-w-[14rem] px-3 py-2">Imehaririwa</th>
@@ -572,7 +572,7 @@ export default function AdminAnnouncementsPage() {
               ) : (
                 <tr className="border-t border-white/10">
                   <td colSpan={6} className="px-3 py-6 text-center text-sm text-slate-400">
-                    Hakuna matukio kwenye kundi hili.
+                    Hakuna matangazo kwenye kundi hili.
                   </td>
                 </tr>
               )}

@@ -588,63 +588,67 @@ export default function AdminSiteSettingsPage({ forcedTab }: AdminSiteSettingsPa
     event.target.value = "";
   };
 
-  const handleUseLiveLocation = async () => {
+  const handleUseLiveLocation = () => {
     if (!navigator.geolocation) {
       toast.error("Geolocation haipatikani kwenye browser hii.");
       return;
     }
 
-    const host = window.location.hostname;
-    const isLocalhost = host === "localhost" || host === "127.0.0.1" || host === "::1";
-    if (!window.isSecureContext && !isLocalhost) {
-      toast.error("Geolocation inahitaji HTTPS (au localhost). Fungua site kwa https.");
-      return;
-    }
-
-    try {
-      if (navigator.permissions?.query) {
-        const permission = await navigator.permissions.query({ name: "geolocation" as PermissionName });
-        if (permission.state === "denied") {
-          toast.error("Ruhusu location permission kwenye browser settings kisha jaribu tena.");
-          return;
-        }
-      }
-    } catch {
-      // Ignore permission API failures and fallback to geolocation request directly.
-    }
-
     setIsDetectingLocation(true);
+
+    const applyPosition = (position: GeolocationPosition) => {
+      setForm((prev) => ({
+        ...prev,
+        mapLatitude: position.coords.latitude.toFixed(6),
+        mapLongitude: position.coords.longitude.toFixed(6),
+        mapLabel: prev.mapLabel || prev.churchName || "Kanisa"
+      }));
+      setIsDetectingLocation(false);
+      toast.success("Actual location imechukuliwa. Bonyeza Save Map Settings kuhifadhi.");
+    };
+
+    const handleLocationError = (error: GeolocationPositionError, attempt: 1 | 2) => {
+      if (
+        attempt === 1 &&
+        (error.code === error.TIMEOUT || error.code === error.POSITION_UNAVAILABLE)
+      ) {
+        navigator.geolocation.getCurrentPosition(
+          applyPosition,
+          (retryError) => handleLocationError(retryError, 2),
+          { enableHighAccuracy: false, timeout: 30000, maximumAge: 300000 }
+        );
+        return;
+      }
+
+      setIsDetectingLocation(false);
+
+      const message = String((error as { message?: string })?.message || "").toLowerCase();
+      if (!window.isSecureContext && message.includes("secure")) {
+        toast.error("Fungua site kwa HTTPS ili kuchukua location.");
+        return;
+      }
+
+      if (error.code === error.PERMISSION_DENIED) {
+        toast.error("Umezuia ruhusa ya location. Ruhusu location kwenye browser kisha jaribu tena.");
+        return;
+      }
+
+      if (error.code === error.POSITION_UNAVAILABLE) {
+        toast.error("Location haijapatikana kwa sasa. Hakikisha GPS/network ipo vizuri.");
+        return;
+      }
+
+      if (error.code === error.TIMEOUT) {
+        toast.error("Imeshindikana kwa sababu ya muda kuisha. Jaribu tena.");
+        return;
+      }
+
+      toast.error("Imeshindikana kupata actual location.");
+    };
+
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setForm((prev) => ({
-          ...prev,
-          mapLatitude: position.coords.latitude.toFixed(6),
-          mapLongitude: position.coords.longitude.toFixed(6),
-          mapLabel: prev.mapLabel || prev.churchName || "Kanisa"
-        }));
-        setIsDetectingLocation(false);
-        toast.success("Live location imechukuliwa. Bonyeza Save Map Settings kuhifadhi.");
-      },
-      (error) => {
-        setIsDetectingLocation(false);
-
-        if (error.code === error.PERMISSION_DENIED) {
-          toast.error("Umezuia ruhusa ya location. Ruhusu location kwenye browser kisha jaribu tena.");
-          return;
-        }
-
-        if (error.code === error.POSITION_UNAVAILABLE) {
-          toast.error("Location haijapatikana kwa sasa. Hakikisha GPS/network ipo vizuri.");
-          return;
-        }
-
-        if (error.code === error.TIMEOUT) {
-          toast.error("Imeshindikana kwa sababu ya muda kuisha. Jaribu tena.");
-          return;
-        }
-
-        toast.error("Imeshindikana kupata live location.");
-      },
+      applyPosition,
+      (error) => handleLocationError(error, 1),
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
     );
   };
@@ -1840,7 +1844,7 @@ export default function AdminSiteSettingsPage({ forcedTab }: AdminSiteSettingsPa
               onClick={handleUseLiveLocation}
               disabled={isDetectingLocation}
             >
-              {isDetectingLocation ? "Fetching..." : "Chukua Live Location"}
+              {isDetectingLocation ? "Fetching..." : "Chukua Actual Location"}
             </button>
           </div>
 

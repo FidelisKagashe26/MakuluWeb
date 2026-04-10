@@ -64,7 +64,7 @@ export default function AdminDashboardPage() {
   const cards = [
     { label: "Total Departments", value: data.stats.totalIdara },
     { label: "Total Leaders", value: data.stats.totalViongozi },
-    { label: "Matukio Yanayoendelea", value: data.stats.activeMatangazo },
+    { label: "Matangazo Yanayoendelea", value: data.stats.activeMatangazo },
     { label: "Total Reports", value: data.stats.totalReports },
     { label: "Total Photos", value: data.stats.totalImages },
     { label: "Total Videos", value: data.stats.totalVideos }
