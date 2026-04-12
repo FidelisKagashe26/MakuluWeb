@@ -12,6 +12,7 @@ type EventApi = {
   imageUrl: string;
   location: string;
   startDate: string;
+  endDate: string;
   status: "draft" | "upcoming" | "ongoing" | "past";
 };
 
@@ -53,6 +54,7 @@ type RecentMixedItem = {
   date: string | null;
   imageUrl: string;
   href: string;
+  note: string;
 };
 
 function truncateText(text: string, max = 120) {
@@ -61,11 +63,41 @@ function truncateText(text: string, max = 120) {
   return `${clean.slice(0, max).trimEnd()}...`;
 }
 
+function toTs(value?: string) {
+  const ts = new Date(String(value || "")).getTime();
+  return Number.isNaN(ts) ? 0 : ts;
+}
+
+function resolveEventStatus(item: EventApi, nowTs: number) {
+  const startTs = toTs(item.startDate);
+  const endTs = toTs(item.endDate);
+
+  if (startTs && endTs) {
+    if (nowTs < startTs) return "upcoming";
+    if (nowTs > endTs) return "past";
+    return "ongoing";
+  }
+
+  if (startTs && !endTs) {
+    return nowTs < startTs ? "upcoming" : "ongoing";
+  }
+
+  if (!startTs && endTs) {
+    return nowTs > endTs ? "past" : "ongoing";
+  }
+
+  if (item.status === "upcoming" || item.status === "ongoing" || item.status === "past") {
+    return item.status;
+  }
+
+  return "ongoing";
+}
+
 function formatDate(dateValue: string | null) {
-  if (!dateValue) return "No date";
+  if (!dateValue) return "Tarehe haijawekwa";
   const parsed = new Date(dateValue);
-  if (Number.isNaN(parsed.getTime())) return "No date";
-  return format(parsed, "dd MMM yyyy");
+  if (Number.isNaN(parsed.getTime())) return "Tarehe haijawekwa";
+  return format(parsed, "dd/MM/yyyy HH:mm");
 }
 
 function sortByDateDesc(items: RecentMixedItem[]) {
@@ -74,6 +106,12 @@ function sortByDateDesc(items: RecentMixedItem[]) {
     const bTime = b.date ? new Date(b.date).getTime() : 0;
     return bTime - aTime;
   });
+}
+
+function getBadgeTone(kind: RecentMixedItem["kind"]) {
+  if (kind === "event") return "bg-church-100 text-church-700 dark:bg-church-900/45 dark:text-church-200";
+  if (kind === "report") return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300";
+  return "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/45 dark:text-indigo-200";
 }
 
 export default function RecentHighlightsSection() {
@@ -91,28 +129,41 @@ export default function RecentHighlightsSection() {
           api.get<ApiResponse<GroupApi[]>>("/public/groups")
         ]);
 
+        const nowTs = Date.now();
         const eventItems: RecentMixedItem[] = (eventsRes.data?.data || [])
-          .filter((item) => item.status === "ongoing" || item.status === "upcoming")
-          .map((item) => ({
-          id: `evt-${item.id}`,
-          kind: "event",
-          badge: item.status === "ongoing" ? "Tukio Live" : "Tukio Lijalo",
-          title: item.title,
-          excerpt: truncateText(item.summary || item.content, 135),
-          date: item.startDate || null,
-          imageUrl: resolvePublicUploadUrl(item.imageUrl || ""),
-          href: "/matukio"
-        }));
+          .map((item) => {
+            const resolvedStatus = resolveEventStatus(item, nowTs);
+            const badge =
+              resolvedStatus === "ongoing"
+                ? "Tukio Linaloendelea"
+                : resolvedStatus === "upcoming"
+                  ? "Tukio Lijalo"
+                  : "Tukio Lililopita";
+
+            return {
+              id: `evt-${item.id}`,
+              kind: "event" as const,
+              badge,
+              title: item.title,
+              excerpt: truncateText(item.summary || item.content, 120),
+              date: item.startDate || null,
+              imageUrl: resolvePublicUploadUrl(item.imageUrl || ""),
+              href: "/matukio",
+              note: item.location || "Mahali haijawekwa"
+            };
+          })
+          .filter((item) => item.badge !== "Tukio Lililopita");
 
         const reportItems: RecentMixedItem[] = (reportsRes.data?.data || []).map((item) => ({
           id: `rep-${item.id}`,
           kind: "report",
           badge: "Ripoti",
           title: item.title,
-          excerpt: truncateText(item.content, 135),
+          excerpt: truncateText(item.content, 120),
           date: item.reportDate || null,
           imageUrl: "",
-          href: "/#reports"
+          href: "/#reports",
+          note: item.author ? `Mwandishi: ${item.author}` : "Ripoti ya idara"
         }));
 
         const groupItems: RecentMixedItem[] = (groupsRes.data?.data || []).map((item) => ({
@@ -120,13 +171,14 @@ export default function RecentHighlightsSection() {
           kind: "group",
           badge: item.type && item.type.toLowerCase().includes("kwaya") ? "Kwaya" : "Kikundi",
           title: item.name,
-          excerpt: truncateText(item.description, 135),
+          excerpt: truncateText(item.description, 120),
           date: null,
           imageUrl: resolvePublicUploadUrl(item.imageUrl || ""),
-          href: "/vikundi"
+          href: "/vikundi",
+          note: item.type || "Kikundi cha kanisa"
         }));
 
-        const mixed = sortByDateDesc([...eventItems, ...reportItems, ...groupItems]);
+        const mixed = sortByDateDesc([...eventItems, ...reportItems, ...groupItems]).slice(0, 10);
 
         if (!cancelled) {
           setItems(mixed);
@@ -149,127 +201,89 @@ export default function RecentHighlightsSection() {
     };
   }, []);
 
-  const featured = items.slice(0, 4);
-  const summary = items.slice(0, 8);
-  const featuredItems: Array<RecentMixedItem | null> = loading ? Array(4).fill(null) : featured;
-  const summaryItems: Array<RecentMixedItem | null> = loading ? Array(6).fill(null) : summary;
-
   return (
     <section className="relative overflow-hidden border-y border-slate-200 bg-gradient-to-b from-slate-100 via-white to-slate-100 py-10 sm:py-12 dark:border-white/10 dark:from-[#0a1438] dark:via-[#0c1a46] dark:to-[#0a1438]">
-      <div className="pointer-events-none absolute left-0 top-0 h-44 w-44 rounded-full bg-church-500/12 blur-3xl dark:bg-church-500/15" />
+      <div className="pointer-events-none absolute left-0 top-0 h-44 w-44 rounded-full bg-church-500/10 blur-3xl dark:bg-church-500/15" />
       <div className="pointer-events-none absolute bottom-0 right-0 h-48 w-48 rounded-full bg-cyan-400/10 blur-3xl dark:bg-cyan-400/10" />
 
-      <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <motion.h2
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.5 }}
-          className="text-center text-3xl uppercase tracking-[0.16em] text-slate-900 sm:text-4xl dark:text-white"
-        >
-          TAARIFA ZA HIVI KARIBUNI
-        </motion.h2>
+      <div className="relative mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between gap-3">
+          <motion.h2
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.5 }}
+            className="text-xl font-bold uppercase tracking-[0.14em] text-slate-900 sm:text-2xl dark:text-white"
+          >
+            TAARIFA ZA HIVI KARIBUNI
+          </motion.h2>
+          <a
+            href="/matukio"
+            className="shrink-0 text-sm font-semibold text-church-700 hover:text-church-800 dark:text-church-300"
+          >
+            Tazama zote
+          </a>
+        </div>
 
-        {!loading && items.length === 0 ? (
-          <div className="mt-6 rounded-2xl border border-dashed border-slate-300/75 bg-white/70 p-5 text-center text-sm text-slate-600 dark:border-white/20 dark:bg-white/[0.04] dark:text-slate-200">
-            No data
+        {loading ? (
+          <div className="mt-4 space-y-2">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div
+                key={`recent-skeleton-${index}`}
+                className="h-24 animate-pulse rounded-xl border border-slate-200 bg-white/70 dark:border-white/15 dark:bg-white/[0.08]"
+              />
+            ))}
           </div>
         ) : null}
 
-        {loading || items.length > 0 ? (
-          <div className="mt-6 grid gap-4 lg:grid-cols-[1.6fr_1fr]">
-          <div className="grid gap-3 sm:grid-cols-2">
-            {featuredItems.map((item, index) => {
-              if (!item) {
-                return (
-                  <div
-                    key={`placeholder-${index}`}
-                    className="h-[250px] animate-pulse rounded-2xl border border-slate-200 bg-slate-200/70 dark:border-white/15 dark:bg-white/[0.08]"
+        {!loading && items.length === 0 ? (
+          <div className="mt-4 rounded-xl border border-dashed border-slate-300/75 bg-white/80 p-5 text-sm text-slate-600 dark:border-white/20 dark:bg-white/[0.04] dark:text-slate-200">
+            Hakuna taarifa kwa sasa.
+          </div>
+        ) : null}
+
+        {!loading && items.length > 0 ? (
+          <div className="mt-4 space-y-2">
+            {items.map((item) => (
+              <a
+                key={item.id}
+                href={item.href}
+                className="group flex items-start gap-3 rounded-xl border border-slate-200 bg-white/85 p-2 transition hover:border-church-300 hover:bg-white dark:border-white/15 dark:bg-white/[0.05] dark:hover:border-church-500/35"
+              >
+                {item.imageUrl ? (
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-20 w-24 rounded-lg object-cover"
                   />
-                );
-              }
+                ) : (
+                  <div className="flex h-20 w-24 items-center justify-center rounded-lg bg-slate-200 text-[0.65rem] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    No image
+                  </div>
+                )}
 
-              return (
-                <article
-                  key={item.id}
-                  className="group relative h-[250px] overflow-hidden rounded-2xl border border-slate-200 dark:border-white/20"
-                >
-                  {item.imageUrl ? (
-                    <img
-                      src={item.imageUrl}
-                      alt={item.title}
-                      loading="lazy"
-                      decoding="async"
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-slate-200 text-sm text-slate-600 dark:bg-slate-900 dark:text-slate-300">
-                      No image
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/10" />
-
-                  <div className="absolute inset-x-0 bottom-0 z-10 p-4 text-white">
-                    <span className="rounded-md border border-white/50 bg-white/10 px-2 py-0.5 text-xs uppercase tracking-[0.14em] text-white backdrop-blur-sm">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${getBadgeTone(item.kind)}`}>
                       {item.badge}
                     </span>
-                    <h3 className="mt-2 text-lg leading-tight">{item.title}</h3>
-                    <p className="mt-1 text-sm text-white/90">{item.excerpt}</p>
-                    <a href={item.href} className="mt-2 inline-block text-sm text-church-200 hover:text-white">
-                      Soma zaidi
-                    </a>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-300">{formatDate(item.date)}</span>
                   </div>
-                </article>
-              );
-            })}
-          </div>
 
-          <aside className="rounded-2xl border border-slate-200 bg-white/80 p-3 shadow-soft backdrop-blur-sm dark:border-white/20 dark:bg-white/[0.08] dark:shadow-[0_18px_45px_rgba(6,12,36,0.35)] dark:backdrop-blur-md">
-            <h3 className="px-1 text-sm uppercase tracking-[0.14em] text-slate-800 dark:text-white/95">Muhtasari wa Recents</h3>
-
-            <div className="mt-2 divide-y divide-slate-200 dark:divide-white/15">
-              {summaryItems.map((item, index) => {
-                if (!item) {
-                  return (
-                    <div key={`summary-placeholder-${index}`} className="flex items-center gap-3 py-3">
-                      <div className="h-12 w-14 animate-pulse rounded-md bg-slate-200 dark:bg-white/10" />
-                      <div className="flex-1 space-y-1">
-                        <div className="h-3 w-3/4 animate-pulse rounded bg-slate-200 dark:bg-white/10" />
-                        <div className="h-3 w-1/2 animate-pulse rounded bg-slate-200 dark:bg-white/10" />
-                      </div>
-                    </div>
-                  );
-                }
-
-                return (
-                  <a key={item.id} href={item.href} className="flex items-center gap-3 py-3">
-                    {item.imageUrl ? (
-                      <img
-                        src={item.imageUrl}
-                        alt={item.title}
-                        loading="lazy"
-                        decoding="async"
-                        className="h-12 w-14 rounded-md object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-12 w-14 items-center justify-center rounded-md bg-slate-200 text-[0.7rem] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                        No image
-                      </div>
-                    )}
-                    <div className="min-w-0">
-                      <p className="truncate text-sm text-slate-900 dark:text-white">{item.title}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-200/85">
-                        {item.badge} | {formatDate(item.date)}
-                      </p>
-                    </div>
-                  </a>
-                );
-              })}
-            </div>
-          </aside>
+                  <h3 className="mt-1 line-clamp-1 text-sm font-bold text-slate-900 group-hover:text-church-700 dark:text-white dark:group-hover:text-church-300">
+                    {item.title}
+                  </h3>
+                  <p className="mt-1 line-clamp-2 text-xs text-slate-600 dark:text-slate-300">{item.excerpt}</p>
+                  <p className="mt-1 line-clamp-1 text-[11px] text-slate-500 dark:text-slate-300/90">{item.note}</p>
+                </div>
+              </a>
+            ))}
           </div>
         ) : null}
       </div>
     </section>
   );
 }
+
