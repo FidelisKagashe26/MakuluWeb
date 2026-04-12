@@ -103,6 +103,7 @@ export default function AdminEventsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [form, setForm] = useState<EventForm>(initialForm);
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
   const [pendingImagePreview, setPendingImagePreview] = useState("");
@@ -126,6 +127,7 @@ export default function AdminEventsPage() {
     setEditingId(null);
     setPendingImageFile(null);
     setPendingImagePreview("");
+    setIsComposerOpen(false);
   };
 
   const onSelectImage = (file: File | null) => {
@@ -209,6 +211,7 @@ export default function AdminEventsPage() {
       endDate: toInputDateTime(row.endDate),
       isPublished: Boolean(row.isPublished)
     });
+    setIsComposerOpen(true);
   };
 
   const handleDelete = async (eventId: string) => {
@@ -223,6 +226,14 @@ export default function AdminEventsPage() {
     } catch {
       toast.error("Imeshindikana kufuta tukio.");
     }
+  };
+
+  const openCreateComposer = () => {
+    setEditingId(null);
+    setPendingImageFile(null);
+    setPendingImagePreview("");
+    setForm(initialForm);
+    setIsComposerOpen(true);
   };
 
   return (
@@ -248,143 +259,14 @@ export default function AdminEventsPage() {
         />
       </div>
 
-      {isLoading ? <AdminTableSkeleton rows={6} columns={5} /> : null}
+      {isLoading ? <AdminTableSkeleton rows={6} columns={6} /> : null}
       {error ? <p className="text-sm text-rose-300">Imeshindikana kupakia matukio.</p> : null}
-
-      {canCreate || canUpdate ? (
-        <article className="rounded-md bg-white/[0.03] p-4">
-          <h2 className="text-lg font-bold text-white">{editingId ? "Hariri Tukio" : "Ongeza Tukio"}</h2>
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
-            <input
-              className="form-input md:col-span-2"
-              placeholder="Jina la tukio"
-              value={form.title}
-              onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
-            />
-            <textarea
-              className="form-input md:col-span-2"
-              rows={2}
-              placeholder="Muhtasari mfupi"
-              value={form.summary}
-              onChange={(event) => setForm((prev) => ({ ...prev, summary: event.target.value }))}
-            />
-            <textarea
-              className="form-input md:col-span-2"
-              rows={4}
-              placeholder="Maelezo ya tukio"
-              value={form.content}
-              onChange={(event) => setForm((prev) => ({ ...prev, content: event.target.value }))}
-            />
-            <input
-              className="form-input"
-              placeholder="Location (mf. Makulu Grounds)"
-              value={form.location}
-              onChange={(event) => setForm((prev) => ({ ...prev, location: event.target.value }))}
-            />
-            <input
-              className="form-input"
-              placeholder="Image URL (optional)"
-              value={form.imageUrl}
-              onChange={(event) => setForm((prev) => ({ ...prev, imageUrl: event.target.value }))}
-            />
-            <label className="grid gap-1 text-sm font-semibold">
-              Start DateTime
-              <input
-                className="form-input"
-                type="datetime-local"
-                value={form.startDate}
-                onChange={(event) => setForm((prev) => ({ ...prev, startDate: event.target.value }))}
-              />
-            </label>
-            <label className="grid gap-1 text-sm font-semibold">
-              End DateTime
-              <input
-                className="form-input"
-                type="datetime-local"
-                value={form.endDate}
-                onChange={(event) => setForm((prev) => ({ ...prev, endDate: event.target.value }))}
-              />
-            </label>
-
-            <div className="md:col-span-2 rounded-xl border border-white/15 bg-white/[0.03] p-3">
-              <div className="flex flex-wrap items-center gap-3">
-                <label className="admin-btn-ghost cursor-pointer px-3 py-2">
-                  <input
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp,image/gif"
-                    className="hidden"
-                    disabled={isSubmitting || isUploadingImage}
-                    onChange={(event) => onSelectImage(event.target.files?.[0] ?? null)}
-                  />
-                  {isUploadingImage ? "Uploading image..." : "Upload Image"}
-                </label>
-                {previewImage ? (
-                  <button
-                    type="button"
-                    className="admin-btn-danger px-3 py-2"
-                    onClick={() => {
-                      onSelectImage(null);
-                      setForm((prev) => ({ ...prev, imageUrl: "" }));
-                    }}
-                    disabled={isSubmitting || isUploadingImage}
-                  >
-                    Remove Image
-                  </button>
-                ) : null}
-                <span className="text-xs text-slate-300">
-                  {pendingImageFile ? pendingImageFile.name : previewImage ? "Image preview ready." : "No image selected."}
-                </span>
-              </div>
-
-              {previewImage ? (
-                <div className="mt-3 w-full max-w-[280px] overflow-hidden rounded-xl border border-white/10">
-                  <img
-                    src={previewImage}
-                    alt="Event preview"
-                    className="h-44 w-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </div>
-              ) : null}
-            </div>
-
-            <label className="md:col-span-2 inline-flex items-center gap-2 text-sm font-semibold text-slate-200">
-              <input
-                type="checkbox"
-                checked={form.isPublished}
-                onChange={(event) => setForm((prev) => ({ ...prev, isPublished: event.target.checked }))}
-              />
-              Publish tukio hili (ikizimwa litakuwa Draft)
-            </label>
-          </div>
-
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              className="admin-btn-primary"
-              type="button"
-              onClick={() => void handleSubmit()}
-              disabled={isSubmitting || isUploadingImage}
-            >
-              {isSubmitting || isUploadingImage
-                ? "Inahifadhi..."
-                : editingId
-                  ? "Save changes"
-                  : "Add event"}
-            </button>
-            {editingId ? (
-              <button className="admin-btn-ghost" type="button" onClick={resetForm}>
-                Cancel
-              </button>
-            ) : null}
-          </div>
-        </article>
-      ) : null}
 
       <div className="overflow-x-auto rounded-md bg-white/[0.03]">
         <table className="min-w-full text-sm text-slate-100">
           <thead>
             <tr className="bg-white/[0.05] text-left">
+              <th className="px-3 py-2">S/N</th>
               <th className="px-3 py-2">Tukio</th>
               <th className="px-3 py-2">Status</th>
               <th className="px-3 py-2">Ratiba</th>
@@ -394,8 +276,9 @@ export default function AdminEventsPage() {
           </thead>
           <tbody>
             {rows.length ? (
-              rows.map((row: EventItem) => (
+              rows.map((row: EventItem, index: number) => (
                 <tr key={row.id} className="border-t border-white/10">
+                  <td className="px-3 py-2 align-top text-xs font-semibold text-slate-300">{index + 1}</td>
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-3">
                       {row.imageUrl ? (
@@ -446,7 +329,7 @@ export default function AdminEventsPage() {
               ))
             ) : (
               <tr className="border-t border-white/10">
-                <td colSpan={5} className="px-3 py-6 text-center text-sm text-slate-400">
+                <td colSpan={6} className="px-3 py-6 text-center text-sm text-slate-400">
                   Hakuna matukio yaliyopatikana.
                 </td>
               </tr>
@@ -454,6 +337,173 @@ export default function AdminEventsPage() {
           </tbody>
         </table>
       </div>
+
+      {canCreate || canUpdate ? (
+        <article className="rounded-md bg-white/[0.03] p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-lg font-bold text-white">
+              {editingId ? "Hariri Tukio" : "Ongeza Tukio"}
+            </h2>
+            <div className="flex gap-2">
+              {!isComposerOpen ? (
+                <button
+                  type="button"
+                  className="admin-btn-primary"
+                  onClick={openCreateComposer}
+                  disabled={!canCreate}
+                >
+                  Ongeza Tukio
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="admin-btn-ghost"
+                  onClick={() => {
+                    if (editingId) {
+                      resetForm();
+                    } else {
+                      setIsComposerOpen(false);
+                    }
+                  }}
+                >
+                  Funga
+                </button>
+              )}
+            </div>
+          </div>
+
+          {!isComposerOpen ? (
+            <p className="mt-3 text-sm text-slate-300">
+              List ya matukio ipo juu. Bonyeza <span className="font-semibold text-white">Ongeza Tukio</span> ili kufungua fomu ya kuongeza.
+            </p>
+          ) : (
+            <>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <input
+                  className="form-input md:col-span-2"
+                  placeholder="Jina la tukio"
+                  value={form.title}
+                  onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
+                />
+                <textarea
+                  className="form-input md:col-span-2"
+                  rows={2}
+                  placeholder="Muhtasari mfupi"
+                  value={form.summary}
+                  onChange={(event) => setForm((prev) => ({ ...prev, summary: event.target.value }))}
+                />
+                <textarea
+                  className="form-input md:col-span-2"
+                  rows={4}
+                  placeholder="Maelezo ya tukio"
+                  value={form.content}
+                  onChange={(event) => setForm((prev) => ({ ...prev, content: event.target.value }))}
+                />
+                <input
+                  className="form-input"
+                  placeholder="Location (mf. Makulu Grounds)"
+                  value={form.location}
+                  onChange={(event) => setForm((prev) => ({ ...prev, location: event.target.value }))}
+                />
+                <input
+                  className="form-input"
+                  placeholder="Image URL (optional)"
+                  value={form.imageUrl}
+                  onChange={(event) => setForm((prev) => ({ ...prev, imageUrl: event.target.value }))}
+                />
+                <label className="grid gap-1 text-sm font-semibold">
+                  Start DateTime
+                  <input
+                    className="form-input"
+                    type="datetime-local"
+                    value={form.startDate}
+                    onChange={(event) => setForm((prev) => ({ ...prev, startDate: event.target.value }))}
+                  />
+                </label>
+                <label className="grid gap-1 text-sm font-semibold">
+                  End DateTime
+                  <input
+                    className="form-input"
+                    type="datetime-local"
+                    value={form.endDate}
+                    onChange={(event) => setForm((prev) => ({ ...prev, endDate: event.target.value }))}
+                  />
+                </label>
+
+                <div className="md:col-span-2 rounded-xl border border-white/15 bg-white/[0.03] p-3">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <label className="admin-btn-ghost cursor-pointer px-3 py-2">
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,image/gif"
+                        className="hidden"
+                        disabled={isSubmitting || isUploadingImage}
+                        onChange={(event) => onSelectImage(event.target.files?.[0] ?? null)}
+                      />
+                      {isUploadingImage ? "Uploading image..." : "Upload Image"}
+                    </label>
+                    {previewImage ? (
+                      <button
+                        type="button"
+                        className="admin-btn-danger px-3 py-2"
+                        onClick={() => {
+                          onSelectImage(null);
+                          setForm((prev) => ({ ...prev, imageUrl: "" }));
+                        }}
+                        disabled={isSubmitting || isUploadingImage}
+                      >
+                        Remove Image
+                      </button>
+                    ) : null}
+                    <span className="text-xs text-slate-300">
+                      {pendingImageFile ? pendingImageFile.name : previewImage ? "Image preview ready." : "No image selected."}
+                    </span>
+                  </div>
+
+                  {previewImage ? (
+                    <div className="mt-3 w-full max-w-[280px] overflow-hidden rounded-xl border border-white/10">
+                      <img
+                        src={previewImage}
+                        alt="Event preview"
+                        className="h-44 w-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  ) : null}
+                </div>
+
+                <label className="md:col-span-2 inline-flex items-center gap-2 text-sm font-semibold text-slate-200">
+                  <input
+                    type="checkbox"
+                    checked={form.isPublished}
+                    onChange={(event) => setForm((prev) => ({ ...prev, isPublished: event.target.checked }))}
+                  />
+                  Publish tukio hili (ikizimwa litakuwa Draft)
+                </label>
+              </div>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  className="admin-btn-primary"
+                  type="button"
+                  onClick={() => void handleSubmit()}
+                  disabled={isSubmitting || isUploadingImage}
+                >
+                  {isSubmitting || isUploadingImage
+                    ? "Inahifadhi..."
+                    : editingId
+                      ? "Save changes"
+                      : "Add event"}
+                </button>
+                <button className="admin-btn-ghost" type="button" onClick={resetForm}>
+                  Cancel
+                </button>
+              </div>
+            </>
+          )}
+        </article>
+      ) : null}
     </div>
   );
 }
