@@ -20,6 +20,7 @@ type NavIconName =
 const links = [
   { label: "Mwanzo", type: "anchor", href: "/", icon: "home" as NavIconName },
   { label: "Matukio", type: "route", to: "/matukio", icon: "announcements" as NavIconName },
+  { label: "Matangazo", type: "route", to: "/matangazo", icon: "announcements" as NavIconName },
   { label: "Viongozi", type: "route", to: "/viongozi", icon: "leaders" as NavIconName }
 ] as const;
 
