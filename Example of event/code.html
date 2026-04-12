@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Electric Curator - Church Events</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#f7f0ff",
+                        "on-primary-fixed": "#000000",
+                        "background": "#faf4ff",
+                        "secondary-fixed": "#d8caff",
+                        "inverse-on-surface": "#a296c4",
+                        "tertiary-container": "#fd8bca",
+                        "secondary-fixed-dim": "#cbbaff",
+                        "secondary": "#6249b2",
+                        "surface-container": "#ede4ff",
+                        "surface-bright": "#faf4ff",
+                        "surface-variant": "#e2d7ff",
+                        "on-error": "#ffefef",
+                        "tertiary-fixed": "#fd8bca",
+                        "inverse-surface": "#10062d",
+                        "surface": "#faf4ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#5f557f",
+                        "error": "#b41340",
+                        "tertiary-fixed-dim": "#ee7ebc",
+                        "outline": "#7b719c",
+                        "surface-tint": "#4a40e0",
+                        "on-background": "#32294f",
+                        "surface-dim": "#dacdff",
+                        "on-surface": "#32294f",
+                        "on-primary-container": "#14007e",
+                        "surface-container-low": "#f5eeff",
+                        "surface-container-highest": "#e2d7ff",
+                        "on-tertiary-fixed-variant": "#6d104e",
+                        "on-tertiary-fixed": "#360024",
+                        "surface-container-high": "#e8deff",
+                        "on-secondary-fixed-variant": "#573da6",
+                        "on-tertiary": "#ffeff4",
+                        "primary-fixed": "#9795ff",
+                        "primary": "#4a40e0",
+                        "error-container": "#f74b6d",
+                        "tertiary-dim": "#892a65",
+                        "primary-dim": "#3d30d4",
+                        "error-dim": "#a70138",
+                        "outline-variant": "#b2a6d5",
+                        "tertiary": "#983772",
+                        "on-tertiary-container": "#610244",
+                        "inverse-primary": "#8582ff",
+                        "on-secondary-fixed": "#3a1b88",
+                        "on-primary": "#f4f1ff",
+                        "secondary-container": "#d8caff",
+                        "on-secondary-container": "#4e339c",
+                        "on-primary-fixed-variant": "#1a0099",
+                        "primary-fixed-dim": "#8885ff",
+                        "primary-container": "#9795ff",
+                        "secondary-dim": "#563ca5",
+                        "on-error-container": "#510017"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #faf4ff; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- TopNavBar -->
+<nav class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 h-16 bg-white/80 dark:bg-indigo-950/80 backdrop-blur-xl rounded-full mt-4 mx-auto max-w-5xl shadow-2xl shadow-indigo-500/10 font-['Manrope'] tracking-tight">
+<div class="text-2xl font-bold tracking-tighter text-indigo-700 dark:text-indigo-300">The Electric Curator</div>
+<div class="hidden md:flex items-center space-x-8">
+<a class="text-indigo-600 dark:text-indigo-400 font-bold border-b-2 border-indigo-600 transition-colors" href="#">Discover</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-indigo-500 transition-colors" href="#">Live Now</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-indigo-500 transition-colors" href="#">Venues</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-indigo-500 transition-colors" href="#">Art</a>
+<a class="text-slate-600 dark:text-slate-400 font-medium hover:text-indigo-500 transition-colors" href="#">Music</a>
+</div>
+<div class="flex items-center space-x-4">
+<div class="hidden lg:flex items-center bg-surface-container px-4 py-1.5 rounded-full">
+<span class="material-symbols-outlined text-on-surface-variant text-sm mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-40" placeholder="Search events..." type="text"/>
+</div>
+<span class="material-symbols-outlined text-indigo-600 cursor-pointer scale-95 active:scale-90 transition-transform">account_circle</span>
+</div>
+</nav>
+<main class="pt-28 pb-32 max-w-7xl mx-auto px-6">
+<!-- Hero / Section: Ongoing Events -->
+<section class="mb-20">
+<div class="flex items-end justify-between mb-8">
+<div>
+<span class="label-md uppercase tracking-[0.2em] text-primary font-bold mb-2 block">Current Vibration</span>
+<h2 class="text-5xl font-extrabold tracking-tighter leading-none">Yanayoendelea</h2>
+</div>
+<div class="hidden md:flex gap-2">
+<span class="px-4 py-2 rounded-full bg-error text-white text-xs font-bold flex items-center gap-2 animate-pulse">
+<span class="w-2 h-2 rounded-full bg-white"></span> LIVE
+                    </span>
+</div>
+</div>
+<div class="relative group h-[500px] rounded-xl overflow-hidden bg-surface-container-high">
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/90 via-inverse-surface/20 to-transparent z-10"></div>
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="dynamic close-up of a diverse church congregation singing with raised hands in a modern sanctuary with purple stage lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJjLUstPLwwfTc8sQ47MY-ZULsYBda6CNUinweDxMf_YLgbw4tK6QlNr8ku7CHtxYp9AMnAY4XGr1OKk4cE9KaIhybQoR19IeFV1nJ8XXFsXH39aR-kWSnjlces4KwJJR9_WTmXpSRnBOuKu-D3OWNdOTyowMeRo4MQEzYScaPO1UIlO603tuSiW_6es2AzPfpBQHDM53x1ltJj2BWYRVes0kVjkGmhJ2M8im9Gw52mUvHlQJMTikPFN_YR-svWJwgN7yyenUH6hJI"/>
+<div class="absolute bottom-0 left-0 p-12 z-20 w-full md:w-2/3">
+<div class="flex gap-3 mb-4">
+<span class="bg-primary/90 text-on-primary px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase">Sunday Service</span>
+<span class="bg-surface-container-lowest/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase">Main Sanctuary</span>
+</div>
+<h3 class="text-white text-6xl font-extrabold tracking-tighter mb-4 leading-tight">Asubuhi ya Sifa: Morning of Praise</h3>
+<p class="text-surface-variant text-lg max-w-xl mb-8 leading-relaxed">Join our vibrant morning fellowship as we explore the power of communal faith and gratitude. Happening right now until 12:00 PM.</p>
+<button class="bg-gradient-to-r from-primary to-primary-dim text-on-primary px-8 py-4 rounded-lg font-bold shadow-xl shadow-primary/20 hover:scale-105 transition-transform">
+                        Join Stream Now
+                    </button>
+</div>
+</div>
+</section>
+<!-- Filters -->
+<section class="mb-12 flex flex-wrap items-center gap-3">
+<span class="text-on-surface-variant font-bold text-sm mr-2 uppercase tracking-wider">Filter By:</span>
+<button class="px-6 py-2 rounded-full bg-primary text-on-primary text-sm font-bold">All Events</button>
+<button class="px-6 py-2 rounded-full bg-secondary-container text-on-secondary-container text-sm font-bold hover:bg-surface-container-high transition-colors">Service</button>
+<button class="px-6 py-2 rounded-full bg-secondary-container text-on-secondary-container text-sm font-bold hover:bg-surface-container-high transition-colors">Youth</button>
+<button class="px-6 py-2 rounded-full bg-secondary-container text-on-secondary-container text-sm font-bold hover:bg-surface-container-high transition-colors">Community</button>
+<button class="px-6 py-2 rounded-full bg-secondary-container text-on-secondary-container text-sm font-bold hover:bg-surface-container-high transition-colors">Outreach</button>
+</section>
+<!-- Section: Upcoming Events -->
+<section class="mb-24">
+<div class="flex items-center justify-between mb-12">
+<h2 class="text-4xl font-extrabold tracking-tighter">Yajayo</h2>
+<div class="h-px flex-1 mx-8 bg-outline-variant/15"></div>
+<button class="text-primary font-bold hover:underline">View Calendar</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<!-- Card 1 -->
+<div class="group bg-surface-container-low rounded-lg overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:bg-surface-container-highest">
+<div class="h-64 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="diverse group of young adults laughing and talking around a rustic wooden table in a brightly lit modern community space" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuMDrVcCLII0OFiVsmJMAp6BTUnAE9ZUP12v27ztM2AE4GnZPoU1Pty9HRNvhHKys6x6WInbNgYvwGfFi5hKEwYaFVX0NrBWsx9ZENIBq1op_tRdnFChkMjwTF2kmYIU49S3u9spza4dcznxfyL3H8VdQLhDWxSO4I8OAVz8U5wH8pgIxPBjUjg0SEpnTuG_zPpJPGEw0NI1A5yhaQFIE3A0F7wtL7EIj21LeDoz7iAMyL6KkRlTU1eXOxlU7GCbS678t4hiHq7Pih"/>
+<div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-lg flex flex-col items-center">
+<span class="text-xs font-bold text-primary leading-none uppercase">Oct</span>
+<span class="text-xl font-extrabold text-on-surface">15</span>
+</div>
+</div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-2">
+<span class="text-[10px] font-extrabold tracking-[0.15em] text-secondary uppercase">Youth Ministry</span>
+<span class="text-primary-dim font-bold text-sm">$ Free</span>
+</div>
+<h4 class="text-2xl font-bold tracking-tight mb-3 text-on-surface">The Gathering: Friday Night Vibes</h4>
+<p class="text-on-surface-variant text-sm mb-6 line-clamp-2">A special evening for youth to connect, share stories, and enjoy acoustic performances in an open-mic setting.</p>
+<div class="flex items-center gap-4 text-on-surface-variant mb-6">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base">location_on</span>
+<span class="text-xs font-medium">Youth Center</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base">schedule</span>
+<span class="text-xs font-medium">7:00 PM</span>
+</div>
+</div>
+<button class="w-full py-3 rounded-lg bg-surface-container-high text-primary font-bold group-hover:bg-primary group-hover:text-white transition-colors">Reserve Spot</button>
+</div>
+</div>
+<!-- Card 2 (Asymmetric Shift) -->
+<div class="group bg-surface-container-low rounded-lg overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:bg-surface-container-highest md:-mt-8">
+<div class="h-64 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="close-up of hands holding warm coffee cups over a table with community posters, soft morning sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBf_m5W8D7V13IEUJSkPh2fVMF31r4DN3ns-1hMIcnDoiI6Jl6vX_B_7LRiCAdRuouTG-9sSHSURc51vEQnKufAVnggscotemoXY74_xZH1xsW4gmGLLVN7KYliMbEdb3XcKlWTt3lukdTWompKTNGGb_rGIfJJbGfZ6JKAdTn5twhw0TkXUf_g3NmnrqA7Can2qrcGcy-ozFspU8Y-oJ3LYDZb_O5vBztS5pqJwjIgLVZsGFn-lRgWOv8ExktF1Y1LFcqfCLQZb6jt"/>
+<div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-lg flex flex-col items-center">
+<span class="text-xs font-bold text-primary leading-none uppercase">Oct</span>
+<span class="text-xl font-extrabold text-on-surface">18</span>
+</div>
+</div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-2">
+<span class="text-[10px] font-extrabold tracking-[0.15em] text-secondary uppercase">Outreach</span>
+<span class="text-primary-dim font-bold text-sm">Join Us</span>
+</div>
+<h4 class="text-2xl font-bold tracking-tight mb-3 text-on-surface">Community Bread &amp; Grace</h4>
+<p class="text-on-surface-variant text-sm mb-6 line-clamp-2">Our weekly food distribution and community support program. Everyone is welcome to contribute or receive.</p>
+<div class="flex items-center gap-4 text-on-surface-variant mb-6">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base">location_on</span>
+<span class="text-xs font-medium">East Wing Hall</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base">schedule</span>
+<span class="text-xs font-medium">9:00 AM</span>
+</div>
+</div>
+<button class="w-full py-3 rounded-lg bg-surface-container-high text-primary font-bold group-hover:bg-primary group-hover:text-white transition-colors">Volunteer Info</button>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group bg-surface-container-low rounded-lg overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:bg-surface-container-highest">
+<div class="h-64 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="silhouettes of people at a contemporary concert with purple stage lights and haze, editorial feel" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAneDozJTq8ZKaYmGGCkJ7R_Zk-esrbZrCDnDRY5maAf11HiwXoFFrVKOzkMA-IdBAIIfAW8VbFUUBx-CePxlMHbNekMaM_LEm-kh8gpoBPUKTTA8kbwDFD2l3UggHmIB-BDdRVGopaJBN1HvoZUegllOSnZfp83X9uhF_xw4crGs3tUa1v9f09kSpraSBzY058EvJdayRwl4cHfwkts2-k8XN6CZoCJ0p44h_WAIuzs9JmXB5rRG74lfJ68JzOpQ8YjRYZ5Id2kIj_"/>
+<div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-lg flex flex-col items-center">
+<span class="text-xs font-bold text-primary leading-none uppercase">Nov</span>
+<span class="text-xl font-extrabold text-on-surface">02</span>
+</div>
+</div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-2">
+<span class="text-[10px] font-extrabold tracking-[0.15em] text-secondary uppercase">Music &amp; Arts</span>
+<span class="text-primary-dim font-bold text-sm">Tickets</span>
+</div>
+<h4 class="text-2xl font-bold tracking-tight mb-3 text-on-surface">City Light Concert Series</h4>
+<p class="text-on-surface-variant text-sm mb-6 line-clamp-2">An immersive night of contemporary gospel and orchestral fusions. Featuring guest artists and our resident choir.</p>
+<div class="flex items-center gap-4 text-on-surface-variant mb-6">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base">location_on</span>
+<span class="text-xs font-medium">Grand Hall</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base">schedule</span>
+<span class="text-xs font-medium">6:30 PM</span>
+</div>
+</div>
+<button class="w-full py-3 rounded-lg bg-surface-container-high text-primary font-bold group-hover:bg-primary group-hover:text-white transition-colors">Get Tickets</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Past Events -->
+<section>
+<div class="flex items-center justify-between mb-8 opacity-60">
+<h2 class="text-3xl font-extrabold tracking-tighter">Yaliyopita</h2>
+<div class="h-px flex-1 mx-8 bg-outline-variant/15"></div>
+<button class="text-on-surface-variant font-bold hover:underline">Archive</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 grayscale-[0.5] opacity-80 hover:grayscale-0 hover:opacity-100 transition-all">
+<div class="bg-white p-4 rounded-xl shadow-sm">
+<img class="w-full h-32 object-cover rounded-lg mb-4" data-alt="blurred motion of children playing in a sunny garden during a church picnic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBK0RjB1aOp4LU8Yl_PV8V7So4MdutnnGtBQ09tMe8y_Poa5oduh52B8Ksdhy3qmo5YMLqlqBf-0gLhwWH0G2n4dilsjpK1cqpR3C-2rrbEx2_bq_VhERnB9qfZNA31uDftV0oXpncpeB8Fu0AMcrsJ5xSWJjaSSUv3YY7bytphTND5DDnqlXH-e0lhp5Htnz7Oh4sbyHQ6-1uiDCXI-QkJPbhBHPZuTKfxkBYyPzY4PqSH8upzh0dJyjrK6jbcsGuk9P_shcf_Ko5H"/>
+<span class="text-[9px] font-bold text-secondary-dim uppercase tracking-widest block mb-1">Sept 28</span>
+<h5 class="font-bold text-sm leading-snug">Family Fun Day &amp; Picnic</h5>
+</div>
+<div class="bg-white p-4 rounded-xl shadow-sm">
+<img class="w-full h-32 object-cover rounded-lg mb-4" data-alt="close-up of a bible and a notepad on a clean white desk, soft focus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5bON6bIVdacxatwsfepPf8sdq2-_H-8oja8CdcSupwBM9fgFAXlaXeTE72b7LYW78ScbwxOEC-8QYAP5OTHHeU8ahLvNxXLMQhkJVj343t7p3sHI1JGMMkKBfMPoxJvMU4ZzzB11VhQo2Ov7-8YD7acd319HojsH3CUzMYlWoCuLVBzs_4qQbdBCg9YF2sUxLTWwrhtFeSQH6HBr7YRxzLTo9mMg9kD7a6o2w7spl5XhylWefWscs7Gxc0weuAPR3sPVwTvXL02wj"/>
+<span class="text-[9px] font-bold text-secondary-dim uppercase tracking-widest block mb-1">Sept 14</span>
+<h5 class="font-bold text-sm leading-snug">Deep Dive: Scripture Study</h5>
+</div>
+<div class="bg-white p-4 rounded-xl shadow-sm">
+<img class="w-full h-32 object-cover rounded-lg mb-4" data-alt="people gathered around a campfire at night, warm orange glow on faces" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRb-zCfnp6G0F1cH13LU_O6SHmVTFnpwvZ6F-7HnQkr2yhzDwFP_NzbH4nMHpmACb6tqL_2if6OrTSmU7kJqlTIRPeXNndxsOoIRpVNpEXp2PSKOA01K3SBBTUtLjvFVWiP2tvKfgD9meW1p-MnqO_qfPJIvfxgsHgen3ingxabwEyEf-ZD1yzQE3AP9Y7VX8DwNVKQYRoJjMr5hAef5MngN4yJyajTx_cWZZtnlyN8mGKWboYmaVvkXAqqUK492z_WP2IsfLoSktt"/>
+<span class="text-[9px] font-bold text-secondary-dim uppercase tracking-widest block mb-1">Aug 30</span>
+<h5 class="font-bold text-sm leading-snug">Night of Reflection Retreat</h5>
+</div>
+<div class="bg-white p-4 rounded-xl shadow-sm">
+<img class="w-full h-32 object-cover rounded-lg mb-4" data-alt="hands stacking wooden building blocks, soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuS7tPvE4wf16LEGn3tFfbZYuQeafqf8mZJqheRDA6FQUOYF_IR94hu0WwGm53nxehnGykJzA2n9WoQMdCguh6k7t1Bgh_Snjc471odLYubQ69Lh-DXH0ybLz2ABobvJPtpBMDzZtnA9PTSUpQ_SJ4OGrprzD6Iqr1hetkF6tnaB2OjHSsH0ji70hywO0jokq9e9wVBLjRhJKYnH7HXpMQHS1vK8iRZVZK29QXU7rvLW7CL0_tfY16NnrncvJSHAIxuGUrqS9gM0Zg"/>
+<span class="text-[9px] font-bold text-secondary-dim uppercase tracking-widest block mb-1">Aug 15</span>
+<h5 class="font-bold text-sm leading-snug">Children's Workshop Series</h5>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 flex justify-around items-end px-6 pb-6 bg-white/70 dark:bg-indigo-950/70 backdrop-blur-2xl shadow-[0_-8px_30px_rgb(0,0,0,0.12)] rounded-t-[32px] font-['Inter'] text-[10px] uppercase tracking-widest">
+<a class="flex flex-col items-center justify-center bg-indigo-600 text-white rounded-2xl p-3 mb-2 scale-110 transition-all duration-300 ease-out" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="mt-1">Discover</span>
+</a>
+<a class="flex flex-col items-center justify-center text-indigo-300/60 dark:text-indigo-300/40 p-2 transition-all hover:bg-indigo-50" href="#">
+<span class="material-symbols-outlined">sensors</span>
+<span class="mt-1">Live</span>
+</a>
+<a class="flex flex-col items-center justify-center text-indigo-300/60 dark:text-indigo-300/40 p-2 transition-all hover:bg-indigo-50" href="#">
+<span class="material-symbols-outlined">location_on</span>
+<span class="mt-1">Venues</span>
+</a>
+<a class="flex flex-col items-center justify-center text-indigo-300/60 dark:text-indigo-300/40 p-2 transition-all hover:bg-indigo-50" href="#">
+<span class="material-symbols-outlined">palette</span>
+<span class="mt-1">Art</span>
+</a>
+<a class="flex flex-col items-center justify-center text-indigo-300/60 dark:text-indigo-300/40 p-2 transition-all hover:bg-indigo-50" href="#">
+<span class="material-symbols-outlined">music_note</span>
+<span class="mt-1">Music</span>
+</a>
+</nav>
+</body></html>
