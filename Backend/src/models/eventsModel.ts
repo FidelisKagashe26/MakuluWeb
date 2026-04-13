@@ -26,6 +26,9 @@ function mapEvent(item: any) {
     summary: String(item.summary || ""),
     content: String(item.content || ""),
     imageUrl: String(item.imageUrl || ""),
+    category: String(item.category || ""),
+    actionLabel: String(item.actionLabel || ""),
+    isFeatured: Boolean(item.isFeatured),
     location: String(item.location || ""),
     startDate: String(item.startDate || ""),
     endDate: String(item.endDate || ""),
@@ -60,6 +63,9 @@ export async function createEvent(payload: any) {
     summary: String(payload.summary || ""),
     content: String(payload.content || ""),
     imageUrl: String(payload.imageUrl || ""),
+    category: String(payload.category || ""),
+    actionLabel: String(payload.actionLabel || ""),
+    isFeatured: Boolean(payload.isFeatured),
     location: String(payload.location || ""),
     startDate: String(payload.startDate || ""),
     endDate: String(payload.endDate || ""),
@@ -96,4 +102,3 @@ export async function deleteEvent(id: string) {
   const result = await EventDbModel.deleteOne({ id });
   return result.deletedCount > 0;
 }
-

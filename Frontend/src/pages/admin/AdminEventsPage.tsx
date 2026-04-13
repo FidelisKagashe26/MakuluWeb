@@ -18,10 +18,13 @@ type EventForm = {
   title: string;
   summary: string;
   content: string;
+  category: string;
+  actionLabel: string;
   location: string;
   imageUrl: string;
   startDate: string;
   endDate: string;
+  isFeatured: boolean;
   isPublished: boolean;
 };
 
@@ -29,10 +32,13 @@ const initialForm: EventForm = {
   title: "",
   summary: "",
   content: "",
+  category: "",
+  actionLabel: "",
   location: "",
   imageUrl: "",
   startDate: "",
   endDate: "",
+  isFeatured: false,
   isPublished: true
 };
 
@@ -172,10 +178,13 @@ export default function AdminEventsPage() {
         title,
         summary: form.summary.trim(),
         content: form.content.trim(),
+        category: form.category.trim(),
+        actionLabel: form.actionLabel.trim(),
         location: form.location.trim(),
         imageUrl,
         startDate,
         endDate,
+        isFeatured: form.isFeatured,
         isPublished: form.isPublished
       };
 
@@ -205,10 +214,13 @@ export default function AdminEventsPage() {
       title: row.title || "",
       summary: row.summary || "",
       content: row.content || "",
+      category: row.category || "",
+      actionLabel: row.actionLabel || "",
       location: row.location || "",
       imageUrl: row.imageUrl || "",
       startDate: toInputDateTime(row.startDate),
       endDate: toInputDateTime(row.endDate),
+      isFeatured: Boolean(row.isFeatured),
       isPublished: Boolean(row.isPublished)
     });
     setIsComposerOpen(true);
@@ -296,7 +308,9 @@ export default function AdminEventsPage() {
                       )}
                       <div className="min-w-0">
                         <p className="truncate font-semibold text-white">{row.title}</p>
-                        <p className="truncate text-xs text-slate-300">{row.summary || "-"}</p>
+                        <p className="truncate text-xs text-slate-300">
+                          {[row.category || "General", row.summary || "-"].join(" | ")}
+                        </p>
                       </div>
                     </div>
                   </td>
@@ -401,6 +415,18 @@ export default function AdminEventsPage() {
                 />
                 <input
                   className="form-input"
+                  placeholder="Category (mf. Youth Ministry)"
+                  value={form.category}
+                  onChange={(event) => setForm((prev) => ({ ...prev, category: event.target.value }))}
+                />
+                <input
+                  className="form-input"
+                  placeholder="Button label (mf. Soma Tukio)"
+                  value={form.actionLabel}
+                  onChange={(event) => setForm((prev) => ({ ...prev, actionLabel: event.target.value }))}
+                />
+                <input
+                  className="form-input"
                   placeholder="Location (mf. Makulu Grounds)"
                   value={form.location}
                   onChange={(event) => setForm((prev) => ({ ...prev, location: event.target.value }))}
@@ -476,6 +502,14 @@ export default function AdminEventsPage() {
                 <label className="md:col-span-2 inline-flex items-center gap-2 text-sm font-semibold text-slate-200">
                   <input
                     type="checkbox"
+                    checked={form.isFeatured}
+                    onChange={(event) => setForm((prev) => ({ ...prev, isFeatured: event.target.checked }))}
+                  />
+                  Weka kama tukio kuu (featured)
+                </label>
+                <label className="md:col-span-2 inline-flex items-center gap-2 text-sm font-semibold text-slate-200">
+                  <input
+                    type="checkbox"
                     checked={form.isPublished}
                     onChange={(event) => setForm((prev) => ({ ...prev, isPublished: event.target.checked }))}
                   />
@@ -507,4 +541,3 @@ export default function AdminEventsPage() {
     </div>
   );
 }
-

@@ -182,6 +182,9 @@ export type EventItem = {
   summary: string;
   content: string;
   imageUrl: string;
+  category: string;
+  actionLabel: string;
+  isFeatured: boolean;
   location: string;
   startDate: string;
   endDate: string;

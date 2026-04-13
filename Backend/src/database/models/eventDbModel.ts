@@ -7,6 +7,9 @@ const eventSchema = new Schema(
     summary: { type: String, default: "" },
     content: { type: String, default: "" },
     imageUrl: { type: String, default: "" },
+    category: { type: String, default: "", index: true },
+    actionLabel: { type: String, default: "" },
+    isFeatured: { type: Boolean, default: false, index: true },
     location: { type: String, default: "" },
     startDate: { type: String, required: true, index: true },
     endDate: { type: String, required: true, index: true },
@@ -25,4 +28,3 @@ const eventSchema = new Schema(
 );
 
 export const EventDbModel: any = mongoose.models.Event || mongoose.model("Event", eventSchema);
-

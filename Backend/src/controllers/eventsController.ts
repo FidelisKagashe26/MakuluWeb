@@ -44,6 +44,12 @@ function normalizeEventInput(body: any) {
   const content = String(body?.content || "").trim();
   const summary = inferSummary(String(body?.summary || ""), content);
   const imageUrl = String(body?.imageUrl || "").trim();
+  const category = String(body?.category || "").trim();
+  const actionLabel = String(body?.actionLabel || "").trim();
+  const isFeatured =
+    typeof body?.isFeatured === "boolean"
+      ? body.isFeatured
+      : String(body?.isFeatured || "").trim().toLowerCase() === "true";
   const location = String(body?.location || "").trim();
   const startDate = String(body?.startDate || "").trim();
   const endDate = String(body?.endDate || "").trim();
@@ -59,6 +65,9 @@ function normalizeEventInput(body: any) {
     summary,
     content,
     imageUrl,
+    category,
+    actionLabel,
+    isFeatured,
     location,
     startDate,
     endDate,
@@ -95,6 +104,8 @@ export async function getEvents(req: Request, res: Response) {
         String(item.title || "").toLowerCase().includes(search) ||
         String(item.summary || "").toLowerCase().includes(search) ||
         String(item.content || "").toLowerCase().includes(search) ||
+        String(item.category || "").toLowerCase().includes(search) ||
+        String(item.actionLabel || "").toLowerCase().includes(search) ||
         String(item.location || "").toLowerCase().includes(search)
       );
     });
@@ -122,6 +133,8 @@ export async function getPublicEvents(req: Request, res: Response) {
         String(item.title || "").toLowerCase().includes(search) ||
         String(item.summary || "").toLowerCase().includes(search) ||
         String(item.content || "").toLowerCase().includes(search) ||
+        String(item.category || "").toLowerCase().includes(search) ||
+        String(item.actionLabel || "").toLowerCase().includes(search) ||
         String(item.location || "").toLowerCase().includes(search)
       );
     });
